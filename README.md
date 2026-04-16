@@ -1,6 +1,6 @@
 # TrailSathi
 
-AI-powered Nepal tourism platform — your intelligent trekking companion.
+AI-powered Nepal tourism platform, your intelligent trekking companion.
 
 # What is TrailSathi?
 
@@ -10,12 +10,12 @@ TrailSathi is a platform that helps travelers plan, connect, navigate and stay s
 
 - AI trek recommender (fitness + budget + season)
 - Verified guide directory with self-registration
-- Community forum — find trek partners, ask questions
+- Community forum  (find trek partners, ask questions)
 - Trail pages with permits, teahouses, day-by-day info
 - Offline maps with GPS and teahouse pins
 - Weather-integrated gear and clothing suggestions
 - SOS emergency system
-- Beyond trekking — Chitwan, Pokhara, Rara and more
+- Beyond trekking (Chitwan, Pokhara, Rara and more....
 
 # Tech Stack
 
