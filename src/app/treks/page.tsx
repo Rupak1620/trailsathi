@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 
 export default async function TreksPage() {
   const { data: treks, error } = await supabase
@@ -50,4 +49,9 @@ export default async function TreksPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Max altitude</p>
-                <p className="text-sm font-medium text-gray-700"></p>
+                <p className="text-sm font-medium text-gray-700">
+                  {trek.max_altitude}m
+                </p>
+              </div>
+              <div>
+                <p
