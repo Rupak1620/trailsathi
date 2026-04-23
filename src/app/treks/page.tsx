@@ -54,4 +54,25 @@ export default async function TreksPage() {
                 </p>
               </div>
               <div>
-                <p
+                <p className="text-xs text-gray-400">Permit</p>
+                <p className="text-sm font-medium text-gray-700">
+                  NPR {trek.permit_cost}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-1">
+              {trek.best_seasons?.map((season: string) => (
+                <span
+                  key={season}
+                  className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded"
+                >
+                  {season}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
