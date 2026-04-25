@@ -12,7 +12,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-white">
 
-      {/* Hero */}
+      {/* HERO WITH AI INPUT */}
       <section className="relative bg-gray-900 text-white">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-40"
@@ -22,49 +22,81 @@ export default async function Home() {
           }}
         />
         <div className="relative max-w-6xl mx-auto px-4 py-32 text-center">
+
           <div className="inline-block bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-wider">
-            Nepal tourism platform
+            AI-powered trekking planner
           </div>
+
           <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
             Plan your trek.<br />
             Find your guide.<br />
             Explore Nepal.
           </h1>
+
           <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-            TrailSathi connects trekkers with verified local guides, real trail
-            data, and an AI-powered planner built specifically for Nepal.
+            TrailSathi helps you discover the perfect trek, connect with verified guides,
+            and plan safely using real-time data and AI.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+          {/* AI INPUT BOX */}
+          <div className="bg-white rounded-xl p-4 max-w-xl mx-auto shadow-lg">
+            <input
+              placeholder="e.g. 7 days, beginner, low budget..."
+              className="w-full p-3 border rounded-lg mb-3 text-black"
+            />
+            <button className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700">
+              Get my trek plan
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
             <Link
               href="/treks"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
             >
-              Find a trek <ArrowRight size={16} />
+              Explore treks <ArrowRight size={16} />
             </Link>
             <Link
               href="/guides"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100"
             >
-              Find a guide
+              Find guides
             </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* LIVE ACTIVITY */}
+      <section className="border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 py-6 flex flex-wrap justify-center gap-6 text-sm text-gray-600">
+          <span>🟢 12 trekkers planning trips this week</span>
+          <span>🟢 5 guides available in Everest region</span>
+          <span>🟢 20+ recent discussions</span>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="py-16">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-10">
+            How it works
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm">
+            {steps.map((step) => (
+              <div key={step.title}>
+                <div className="text-3xl mb-2">{step.icon}</div>
+                <h3 className="font-semibold text-gray-900">{step.title}</h3>
+                <p className="text-gray-500 mt-1">{step.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <div className="text-3xl font-bold text-gray-900">{s.value}</div>
-              <div className="text-sm text-gray-500 mt-1">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured treks */}
-      <section className="py-20">
+      {/* POPULAR TREKS */}
+      <section className="py-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between mb-10">
             <div>
@@ -82,33 +114,33 @@ export default async function Home() {
               View all <ArrowRight size={14} />
             </Link>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {treks?.map((trek) => (
               <Link
                 href={`/treks/${trek.id}`}
                 key={trek.id}
-                className="group border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-all"
+                className="group border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-all bg-white"
               >
-                <div className="bg-gray-100 h-48 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-60" />
-                  <div className="absolute bottom-4 left-4">
-                    <span className="text-xs font-medium text-white bg-green-600 px-2 py-1 rounded">
-                      {trek.region}
-                    </span>
-                  </div>
-                </div>
+                <img
+                  src={trek.image_url || "https://images.unsplash.com/photo-1501785888041-af3ef285b470"}
+                  className="h-48 w-full object-cover"
+                />
+
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 group-hover:text-green-700 transition-colors">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-green-700">
                       {trek.name}
                     </h3>
                     <span className="text-xs text-gray-400">
                       {trek.difficulty}
                     </span>
                   </div>
+
                   <p className="text-sm text-gray-500 line-clamp-2 mb-4">
                     {trek.description}
                   </p>
+
                   <div className="flex items-center gap-4 text-xs text-gray-400">
                     <span>{trek.duration_days} days</span>
                     <span>{trek.max_altitude}m</span>
@@ -120,101 +152,96 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="bg-gray-50 py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+      {/* WHY TRAILSATHI */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Why TrailSathi
           </h2>
-          <p className="text-gray-500 text-center mb-12">
-            Built for Nepal, by someone who has trekked these trails
+          <p className="text-gray-500 mb-12">
+            Built for Nepal, by real trekkers
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {features.map((f) => (
-              <div
-                key={f.title}
-                className="bg-white rounded-xl p-6 border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all"
-              >
-                <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mb-4">
-                  <f.icon size={20} className="text-green-700" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500">{f.description}</p>
+              <div key={f.title} className="p-6 border rounded-xl">
+                <f.icon className="text-green-600 mb-4" />
+                <h3 className="font-semibold text-gray-900">{f.title}</h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  {f.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Guide CTA */}
+      {/* TRUST SECTION */}
+      <section className="bg-gray-50 py-16 text-center">
+        <div className="max-w-4xl mx-auto px-4 text-sm text-gray-600 space-y-2">
+          <p>✔ Licensed and verified guides</p>
+          <p>✔ Real-time trail and safety data</p>
+          <p>✔ Built in Nepal 🇳🇵</p>
+          <p>✔ Designed for safe trekking</p>
+        </div>
+      </section>
+
+      {/* GUIDE CTA */}
       <section className="py-20">
         <div className="max-w-6xl mx-auto px-4">
           <div className="bg-green-700 rounded-2xl px-8 py-16 text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">Are you a trekking guide?</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Are you a trekking guide?
+            </h2>
             <p className="text-green-100 mb-8 max-w-xl mx-auto">
-              Join TrailSathi and get discovered by trekkers from around the
-              world. Free to register. No commission until you grow.
+              Join TrailSathi and get discovered by trekkers worldwide.
+              Free to register.
             </p>
             <Link
               href="/guides/register"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-green-700 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+              className="px-8 py-4 bg-white text-green-700 rounded-lg font-semibold"
             >
-              Register as a guide <ArrowRight size={16} />
+              Register as a guide
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-10">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <p className="font-semibold text-gray-900">TrailSathi</p>
-            <p className="text-sm text-gray-400">Nepal tourism platform</p>
-          </div>
-          <div className="flex gap-6">
-            <Link href="/treks" className="text-sm text-gray-500 hover:text-gray-900">Treks</Link>
-            <Link href="/guides" className="text-sm text-gray-500 hover:text-gray-900">Guides</Link>
-            <Link href="/community" className="text-sm text-gray-500 hover:text-gray-900">Community</Link>
-            <Link href="/destinations" className="text-sm text-gray-500 hover:text-gray-900">Destinations</Link>
-          </div>
-        </div>
+      {/* FOOTER */}
+      <footer className="border-t py-10 text-center text-sm text-gray-500">
+        TrailSathi — Nepal trekking platform
       </footer>
 
     </main>
   );
 }
 
-const stats = [
-  { value: "100+", label: "Trekking routes" },
-  { value: "50+", label: "Verified guides" },
-  { value: "15+", label: "Destinations" },
-  { value: "8000m+", label: "Highest peak" },
+const steps = [
+  { icon: "🧠", title: "Tell us your plan", desc: "Budget, days, fitness" },
+  { icon: "🤖", title: "Get AI recommendations", desc: "Best treks for you" },
+  { icon: "🧑‍🏔️", title: "Connect with guides", desc: "Verified locals" },
+  { icon: "🏔️", title: "Start your journey", desc: "Trek safely" },
 ];
 
 const features = [
   {
     icon: Star,
-    title: "AI trek planner",
-    description:
-      "Get personalized trek recommendations based on your fitness, budget, and experience.",
+    title: "Get your perfect trek in seconds",
+    description: "AI matches your fitness, budget, and time",
   },
   {
     icon: Users,
-    title: "Verified guides",
-    description:
-      "Every guide is verified with license number, experience, and trekker reviews.",
+    title: "Verified local guides",
+    description: "Real profiles with experience and reviews",
   },
   {
     icon: MapPin,
     title: "Real trail data",
-    description:
-      "Up to date permit costs, teahouse locations, altitude profiles, and seasonal advice.",
+    description: "Updated routes, costs, and conditions",
   },
   {
     icon: Shield,
-    title: "Safety first",
-    description:
-      "Emergency contacts, weather alerts, and SOS features for remote trekking areas.",
+    title: "Safety-first design",
+    description: "Emergency-ready features for trekking",
   },
 ];
