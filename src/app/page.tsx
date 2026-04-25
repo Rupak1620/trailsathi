@@ -12,61 +12,86 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-white">
 
-      {/* HERO WITH AI INPUT */}
+            {/* Hero */}
       <section className="relative bg-gray-900 text-white">
+
+        {/* Background */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-40"
+          className="absolute inset-0 bg-cover bg-center opacity-50"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600')",
+              "url('https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=1600')",
           }}
         />
-        <div className="relative max-w-6xl mx-auto px-4 py-32 text-center">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80" />
 
+        {/* Content */}
+        <div className="relative max-w-5xl mx-auto px-4 py-32 text-center">
+
+          {/* Badge */}
           <div className="inline-block bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-wider">
-            AI-powered trekking planner
+            AI-powered Nepal travel planner
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Plan your trek.<br />
-            Find your guide.<br />
-            Explore Nepal.
+          {/* Heading */}
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            Plan your perfect Nepal trip
+            <br />
+            <span className="text-green-400">with AI + local insight</span>
           </h1>
 
+          {/* Subtext */}
           <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-            TrailSathi helps you discover the perfect trek, connect with verified guides,
-            and plan safely using real-time data and AI.
+            Tell us your time, budget, and interests — trekking, jungle safari, city tours, or adventure sports — TrailSathi builds your perfect Nepal itinerary with real local insights.
           </p>
 
-          {/* AI INPUT BOX */}
-          <div className="bg-white rounded-xl p-4 max-w-xl mx-auto shadow-lg">
+          {/* AI Input Box */}
+          <div className="bg-white rounded-xl p-4 max-w-2xl mx-auto shadow-xl">
+
             <input
-              placeholder="e.g. 7 days, beginner, low budget..."
-              className="w-full p-3 border rounded-lg mb-3 text-black"
+              type="text"
+              placeholder="e.g. 7 days Nepal, Pokhara + Chitwan, budget $800"
+              className="w-full px-4 py-3 rounded-lg text-gray-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-            <button className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700">
-              Get my trek plan
+
+            <button className="mt-3 w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+              Get my trip plan
             </button>
+
+            {/* Suggestion Chips */}
+            <div className="flex flex-wrap gap-2 mt-3 justify-center text-xs">
+              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">7 days trip</span>
+              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">Pokhara + Chitwan</span>
+              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">Adventure sports</span>
+              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">Budget $500</span>
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link
               href="/treks"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
             >
               Explore treks <ArrowRight size={16} />
             </Link>
             <Link
               href="/guides"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
             >
               Find guides
             </Link>
           </div>
 
+          {/* Trust Signals */}
+          <div className="flex flex-wrap justify-center gap-6 mt-10 text-sm text-gray-300">
+            <div>🟢 500+ trekkers planning trips</div>
+            <div>🟢 100+ verified guides</div>
+            <div>🟢 Real-time travel insights</div>
+          </div>
+
         </div>
       </section>
-
       {/* LIVE ACTIVITY */}
       <section className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-6 flex flex-wrap justify-center gap-6 text-sm text-gray-600">
