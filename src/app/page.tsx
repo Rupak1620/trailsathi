@@ -1,13 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, MapPin, Users, Shield, Star } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getVerifiedTreks } from "@/lib/treks";
 
 export default async function Home() {
-  const { data: treks } = await supabase
-    .from("treks")
-    .select("*")
-    .limit(3)
-    .order("name");
+  const treks = await getVerifiedTreks(3);
 
   return (
     <main className="min-h-screen bg-white">
@@ -143,12 +140,15 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {treks?.map((trek) => (
               <Link
-                href={`/treks/${trek.id}`}
+                href={`/treks/${trek.slug}`}
                 key={trek.id}
                 className="group border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-all bg-white"
               >
-                <img
-                  src={trek.image_url || "https://images.unsplash.com/photo-1501785888041-af3ef285b470"}
+                <Image
+                  src="https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+                  alt={trek.name}
+                  width={640}
+                  height={384}
                   className="h-48 w-full object-cover"
                 />
 
@@ -167,8 +167,8 @@ export default async function Home() {
                   </p>
 
                   <div className="flex items-center gap-4 text-xs text-gray-400">
-                    <span>{trek.duration_days} days</span>
-                    <span>{trek.max_altitude}m</span>
+                    <span>{formatDuration(trek.duration_days)}</span>
+                    <span>{trek.max_altitude ? `${trek.max_altitude}m` : "Altitude pending"}</span>
                   </div>
                 </div>
               </Link>
@@ -270,3 +270,11 @@ const features = [
     description: "Emergency-ready features for trekking",
   },
 ];
+
+function formatDuration(duration: number | null) {
+  if (typeof duration === "number") {
+    return `${duration} days`;
+  }
+
+  return "Duration pending";
+}

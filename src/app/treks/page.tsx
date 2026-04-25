@@ -1,15 +1,8 @@
-import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+import { getVerifiedTreks } from "@/lib/treks";
 
 export default async function TreksPage() {
-  const { data: treks, error } = await supabase
-    .from("treks")
-    .select("*")
-    .order("name");
-
-  if (error) {
-    console.error(error);
-    return <div>Failed to load treks.</div>;
-  }
+  const treks = await getVerifiedTreks();
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-12">
@@ -24,7 +17,8 @@ export default async function TreksPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {treks?.map((trek) => (
-          <div
+          <Link
+            href={`/treks/${trek.slug}`}
             key={trek.id}
             className="border border-gray-100 rounded-lg p-6 hover:border-green-200 hover:shadow-sm transition-all"
           >
@@ -44,24 +38,28 @@ export default async function TreksPage() {
               <div>
                 <p className="text-xs text-gray-400">Duration</p>
                 <p className="text-sm font-medium text-gray-700">
-                  {trek.duration_days} days
+                  {formatDuration(trek.duration_days)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Max altitude</p>
                 <p className="text-sm font-medium text-gray-700">
-                  {trek.max_altitude}m
+                  {trek.max_altitude ? `${trek.max_altitude}m` : "Pending"}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Permit</p>
                 <p className="text-sm font-medium text-gray-700">
-                  NPR {trek.permit_cost}
+                  {trek.permit_required && trek.permit_cost
+                    ? `From NPR ${trek.permit_cost}`
+                    : trek.permit_required
+                      ? "Required"
+                      : "Not required"}
                 </p>
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-1">
-              {trek.best_seasons?.map((season: string) => (
+              {trek.best_seasons?.map((season) => (
                 <span
                   key={season}
                   className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded"
@@ -70,9 +68,17 @@ export default async function TreksPage() {
                 </span>
               ))}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </main>
   );
+}
+
+function formatDuration(duration: number | null) {
+  if (typeof duration === "number") {
+    return `${duration} days`;
+  }
+
+  return "Pending";
 }
