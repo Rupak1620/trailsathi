@@ -20,7 +20,7 @@ export default async function Home() {
           className="absolute inset-0 bg-cover bg-center opacity-50"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=1600')",
+              "url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600')",
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80" />
