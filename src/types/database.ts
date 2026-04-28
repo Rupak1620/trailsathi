@@ -131,9 +131,42 @@ export type Database = {
           created_at?: string;
         };
       };
+      trek_itineraries: {
+        Row: {
+          id: string;
+          trek_id: string;
+          day_number: number;
+          title: string;
+          summary: string | null;
+          overnight_place: string | null;
+          altitude_m: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          trek_id: string;
+          day_number: number;
+          title: string;
+          summary?: string | null;
+          overnight_place?: string | null;
+          altitude_m?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          trek_id?: string;
+          day_number?: number;
+          title?: string;
+          summary?: string | null;
+          overnight_place?: string | null;
+          altitude_m?: number | null;
+          created_at?: string;
+        };
+      };
     };
   };
 };
 
 export type TrekRow = Database["public"]["Tables"]["treks"]["Row"];
 export type TrekSourceRow = Database["public"]["Tables"]["trek_sources"]["Row"];
+export type TrekItineraryRow = Database["public"]["Tables"]["trek_itineraries"]["Row"];

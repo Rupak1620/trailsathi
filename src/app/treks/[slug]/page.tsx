@@ -1,8 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, CalendarDays, ExternalLink, MapPinned, Mountain, ShieldAlert } from "lucide-react";
-import { getTrekSources, getVerifiedTrekBySlug, parsePermitCosts } from "@/lib/treks";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  CalendarDays,
+  ExternalLink,
+  MapPinned,
+  Mountain,
+  ShieldAlert,
+} from "lucide-react";
+import {
+  getTrekItinerary,
+  getTrekSources,
+  getVerifiedTrekBySlug,
+  parsePermitCosts,
+} from "@/lib/treks";
 
 type TrekDetailPageProps = {
   params: Promise<{
@@ -20,6 +33,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
 
   const permits = parsePermitCosts(trek.permit_costs);
   const sources = await getTrekSources(trek.id);
+  const itinerary = await getTrekItinerary(trek.id);
 
   return (
     <main className="min-h-screen bg-stone-50">
@@ -109,6 +123,54 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 <p className="text-stone-500">Highlights are still being verified.</p>
               )}
             </div>
+          </section>
+
+          <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-semibold text-stone-900">Itinerary</h2>
+              {itinerary.length > 0 ? (
+                <span className="text-sm text-stone-500">{itinerary.length} verified day entries</span>
+              ) : null}
+            </div>
+
+            {itinerary.length > 0 ? (
+              <div className="mt-5 space-y-4">
+                {itinerary.map((day) => (
+                  <div key={day.id} className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+                          Day {day.day_number}
+                        </p>
+                        <h3 className="mt-1 text-lg font-semibold text-stone-900">{day.title}</h3>
+                      </div>
+
+                      {day.altitude_m ? (
+                        <span className="rounded-full bg-white px-3 py-1 text-sm font-medium text-stone-700">
+                          {day.altitude_m} m
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {day.summary ? (
+                      <p className="mt-3 leading-7 text-stone-600">{day.summary}</p>
+                    ) : null}
+
+                    {day.overnight_place ? (
+                      <p className="mt-3 text-sm text-stone-500">Overnight: {day.overnight_place}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-5 rounded-xl border border-dashed border-stone-300 bg-stone-50 p-5">
+                <p className="font-medium text-stone-800">Verified itinerary is still being prepared.</p>
+                <p className="mt-2 text-sm leading-6 text-stone-600">
+                  Add day-by-day entries in Supabase `trek_itineraries` when you are ready. This section will
+                  automatically render them in order.
+                </p>
+              </div>
+            )}
           </section>
 
           <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">

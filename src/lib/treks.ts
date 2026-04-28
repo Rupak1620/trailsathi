@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase";
-import type { TrekPermit, TrekRow, TrekSourceRow } from "@/types/database";
+import type {
+  TrekItineraryRow,
+  TrekPermit,
+  TrekRow,
+  TrekSourceRow,
+} from "@/types/database";
 
 const verifiedTrekSelect = `
   id,
@@ -84,6 +89,20 @@ export async function getTrekSources(trekId: string): Promise<TrekSourceRow[]> {
     .select("id, trek_id, source_name, source_url, source_type, checked_at, notes, created_at")
     .eq("trek_id", trekId)
     .order("checked_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
+export async function getTrekItinerary(trekId: string): Promise<TrekItineraryRow[]> {
+  const { data, error } = await supabase
+    .from("trek_itineraries")
+    .select("id, trek_id, day_number, title, summary, overnight_place, altitude_m, created_at")
+    .eq("trek_id", trekId)
+    .order("day_number");
 
   if (error) {
     throw error;
