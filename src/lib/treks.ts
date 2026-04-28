@@ -23,6 +23,7 @@ const verifiedTrekSelect = `
   best_seasons,
   highlights,
   safety_notes,
+  image_url,
   is_verified,
   last_verified_at
 `;

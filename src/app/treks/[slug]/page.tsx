@@ -16,6 +16,7 @@ import {
   getVerifiedTrekBySlug,
   parsePermitCosts,
 } from "@/lib/treks";
+import { getTrekImageWithFallback } from "@/lib/trek-images";
 
 type TrekDetailPageProps = {
   params: Promise<{
@@ -51,7 +52,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
           <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
             <div className="relative h-72 w-full sm:h-96">
               <Image
-                src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1600"
+                src={getTrekImageWithFallback(trek.slug, trek.image_url)}
                 alt={trek.name}
                 fill
                 className="object-cover"

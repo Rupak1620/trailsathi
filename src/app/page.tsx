@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MapPin, Users, Shield, Star } from "lucide-react";
 import { getVerifiedTreks } from "@/lib/treks";
+import { getTrekImageWithFallback } from "@/lib/trek-images";
 
 export default async function Home() {
   const treks = await getVerifiedTreks(3);
@@ -145,7 +146,7 @@ export default async function Home() {
                 className="group border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-all bg-white"
               >
                 <Image
-                  src="https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+                  src={getTrekImageWithFallback(trek.slug, trek.image_url)}
                   alt={trek.name}
                   width={640}
                   height={384}

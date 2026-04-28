@@ -49,6 +49,7 @@ export type Database = {
           best_seasons: string[] | null;
           highlights: string[] | null;
           safety_notes: string[] | null;
+          image_url: string | null;
           is_verified: boolean;
           last_verified_at: string | null;
           created_at: string;
@@ -71,6 +72,7 @@ export type Database = {
           best_seasons?: string[] | null;
           highlights?: string[] | null;
           safety_notes?: string[] | null;
+          image_url?: string | null;
           is_verified?: boolean;
           last_verified_at?: string | null;
           created_at?: string;
@@ -93,6 +95,7 @@ export type Database = {
           best_seasons?: string[] | null;
           highlights?: string[] | null;
           safety_notes?: string[] | null;
+          image_url?: string | null;
           is_verified?: boolean;
           last_verified_at?: string | null;
           created_at?: string;
