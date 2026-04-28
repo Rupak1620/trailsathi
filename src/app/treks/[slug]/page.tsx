@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, CalendarDays, MapPinned, Mountain, ShieldAlert } from "lucide-react";
-import { getVerifiedTrekBySlug, parsePermitCosts } from "@/lib/treks";
+import { ArrowLeft, BadgeCheck, CalendarDays, ExternalLink, MapPinned, Mountain, ShieldAlert } from "lucide-react";
+import { getTrekSources, getVerifiedTrekBySlug, parsePermitCosts } from "@/lib/treks";
 
 type TrekDetailPageProps = {
   params: Promise<{
@@ -19,6 +19,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
   }
 
   const permits = parsePermitCosts(trek.permit_costs);
+  const sources = await getTrekSources(trek.id);
 
   return (
     <main className="min-h-screen bg-stone-50">
@@ -201,7 +202,54 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 <dt className="text-stone-500">Last updated</dt>
                 <dd className="font-medium text-stone-900">{formatVerifiedAt(trek.last_verified_at)}</dd>
               </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-stone-500">Source count</dt>
+                <dd className="font-medium text-stone-900">{sources.length}</dd>
+              </div>
             </dl>
+          </section>
+
+          <section className="rounded-2xl border border-stone-200 bg-white p-6">
+            <h2 className="text-lg font-semibold text-stone-900">Sources</h2>
+            {sources.length > 0 ? (
+              <div className="mt-4 space-y-4">
+                {sources.map((source) => (
+                  <div key={source.id} className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-medium text-stone-900">{source.source_name}</h3>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500">
+                          {source.source_type ? (
+                            <span className="rounded-full bg-white px-2 py-1 uppercase tracking-wide text-stone-500">
+                              {source.source_type}
+                            </span>
+                          ) : null}
+                          <span>Checked {formatVerifiedAt(source.checked_at)}</span>
+                        </div>
+                      </div>
+
+                      {source.source_url ? (
+                        <a
+                          href={source.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-green-700 hover:text-green-800"
+                        >
+                          Visit
+                          <ExternalLink size={14} />
+                        </a>
+                      ) : null}
+                    </div>
+
+                    {source.notes ? (
+                      <p className="mt-3 text-sm leading-6 text-stone-600">{source.notes}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-stone-500">Source records are still being added for this trek.</p>
+            )}
           </section>
         </aside>
       </section>

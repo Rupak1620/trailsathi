@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { TrekPermit, TrekRow } from "@/types/database";
+import type { TrekPermit, TrekRow, TrekSourceRow } from "@/types/database";
 
 const verifiedTrekSelect = `
   id,
@@ -76,6 +76,20 @@ export async function getVerifiedTrekBySlug(slug: string): Promise<TrekRow | nul
   }
 
   return data;
+}
+
+export async function getTrekSources(trekId: string): Promise<TrekSourceRow[]> {
+  const { data, error } = await supabase
+    .from("trek_sources")
+    .select("id, trek_id, source_name, source_url, source_type, checked_at, notes, created_at")
+    .eq("trek_id", trekId)
+    .order("checked_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
 }
 
 export function parsePermitCosts(value: TrekRow["permit_costs"]): TrekPermit[] {
