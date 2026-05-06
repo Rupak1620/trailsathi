@@ -92,7 +92,8 @@ export async function getTrekSources(trekId: string): Promise<TrekSourceRow[]> {
     .order("checked_at", { ascending: false });
 
   if (error) {
-    throw error;
+    console.error("Failed to load trek sources", { trekId, error });
+    return [];
   }
 
   return data ?? [];
@@ -106,7 +107,8 @@ export async function getTrekItinerary(trekId: string): Promise<TrekItineraryRow
     .order("day_number");
 
   if (error) {
-    throw error;
+    console.error("Failed to load trek itinerary", { trekId, error });
+    return [];
   }
 
   return data ?? [];

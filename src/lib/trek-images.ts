@@ -1,6 +1,11 @@
 const genericTrekImage =
   "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1600";
 
+const allowedImageHosts = [
+  "images.unsplash.com",
+  "commons.wikimedia.org",
+];
+
 const trekImageBySlug: Record<string, string> = {
   "everest-base-camp":
     "https://commons.wikimedia.org/wiki/Special:FilePath/View_of_Everest_Base_Camp_Trek.jpg",
@@ -17,5 +22,26 @@ export function getTrekImage(slug: string) {
 }
 
 export function getTrekImageWithFallback(slug: string, imageUrl: string | null) {
-  return imageUrl || getTrekImage(slug);
+  if (imageUrl && isAllowedImageUrl(imageUrl)) {
+    return imageUrl;
+  }
+
+  return getTrekImage(slug);
+}
+
+function isAllowedImageUrl(imageUrl: string) {
+  try {
+    const parsed = new URL(imageUrl);
+
+    if (parsed.protocol !== "https:") {
+      return false;
+    }
+
+    return (
+      allowedImageHosts.includes(parsed.hostname) ||
+      parsed.hostname.endsWith(".supabase.co")
+    );
+  } catch {
+    return false;
+  }
 }
