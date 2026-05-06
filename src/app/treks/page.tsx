@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getVerifiedTreks } from "@/lib/treks";
+import { getPermitPriceSummary, getVerifiedTreks } from "@/lib/treks";
 
 export default async function TreksPage() {
   const treks = await getVerifiedTreks();
@@ -50,11 +50,9 @@ export default async function TreksPage() {
               <div>
                 <p className="text-xs text-gray-400">Permit</p>
                 <p className="text-sm font-medium text-gray-700">
-                  {trek.permit_required && trek.permit_cost
-                    ? `From NPR ${trek.permit_cost}`
-                    : trek.permit_required
-                      ? "Required"
-                      : "Not required"}
+                  {trek.permit_required
+                    ? getPermitPriceSummary(trek.permit_costs) || "Required"
+                    : "Not required"}
                 </p>
               </div>
             </div>

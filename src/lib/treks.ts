@@ -18,7 +18,6 @@ const verifiedTrekSelect = `
   route_overview,
   permit_required,
   permit_details,
-  permit_cost,
   permit_costs,
   best_seasons,
   highlights,
@@ -120,4 +119,21 @@ export function parsePermitCosts(value: TrekRow["permit_costs"]): TrekPermit[] {
   }
 
   return value as unknown as TrekPermit[];
+}
+
+export function getPermitPriceSummary(value: TrekRow["permit_costs"]) {
+  const permits = parsePermitCosts(value);
+  const amounts = permits.flatMap((permit) => permit.costs.map((cost) => cost.amount_npr));
+
+  if (amounts.length === 0) {
+    return null;
+  }
+
+  const nonZeroAmounts = amounts.filter((amount) => amount > 0);
+
+  if (nonZeroAmounts.length === 0) {
+    return "No fee";
+  }
+
+  return `From NPR ${Math.min(...nonZeroAmounts)}`;
 }

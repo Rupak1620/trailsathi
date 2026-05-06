@@ -44,7 +44,6 @@ export type Database = {
           route_overview: string | null;
           permit_required: boolean;
           permit_details: string | null;
-          permit_cost: number | null;
           permit_costs: Json | null;
           best_seasons: string[] | null;
           highlights: string[] | null;
@@ -67,7 +66,6 @@ export type Database = {
           route_overview?: string | null;
           permit_required?: boolean;
           permit_details?: string | null;
-          permit_cost?: number | null;
           permit_costs?: Json | null;
           best_seasons?: string[] | null;
           highlights?: string[] | null;
@@ -90,7 +88,6 @@ export type Database = {
           route_overview?: string | null;
           permit_required?: boolean;
           permit_details?: string | null;
-          permit_cost?: number | null;
           permit_costs?: Json | null;
           best_seasons?: string[] | null;
           highlights?: string[] | null;
