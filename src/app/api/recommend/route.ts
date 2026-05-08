@@ -1,51 +1,21 @@
 import { NextResponse } from "next/server";
 import { buildRecommendationContext } from "@/lib/recommendation-context";
 
-const recommendationSchema = {
-  name: "trailsathi_recommendation",
-  strict: true,
-  schema: {
-    type: "object",
-    additionalProperties: false,
-    required: ["summary", "recommendations", "safety_notes", "follow_up"],
-    properties: {
-      summary: { type: "string" },
-      recommendations: {
-        type: "array",
-        maxItems: 3,
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: [
-            "slug",
-            "name",
-            "region",
-            "why_fit",
-            "duration_days",
-            "difficulty",
-            "max_altitude",
-            "permit_summary",
-          ],
-          properties: {
-            slug: { type: "string" },
-            name: { type: "string" },
-            region: { type: "string" },
-            why_fit: { type: "string" },
-            duration_days: { type: ["integer", "null"] },
-            difficulty: { type: ["string", "null"] },
-            max_altitude: { type: ["integer", "null"] },
-            permit_summary: { type: "string" },
-          },
-        },
-      },
-      safety_notes: {
-        type: "array",
-        items: { type: "string" },
-      },
-      follow_up: { type: "string" },
-    },
-  },
-} as const;
+type RecommendationPayload = {
+  summary: string;
+  recommendations: Array<{
+    slug: string;
+    name: string;
+    region: string;
+    why_fit: string;
+    duration_days: number | null;
+    difficulty: string | null;
+    max_altitude: number | null;
+    permit_summary: string;
+  }>;
+  safety_notes: string[];
+  follow_up: string;
+};
 
 export async function POST(request: Request) {
   try {
@@ -56,87 +26,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please describe the kind of trek you want." }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "OPENAI_API_KEY is missing from the server environment." },
-        { status: 500 }
-      );
-    }
-
     const context = await buildRecommendationContext(trimmedPrompt);
 
     if (context.shortlist.length === 0) {
       return NextResponse.json({
         summary: "No verified trek is available in the current system.",
         recommendations: [],
-        safety_notes: ["Expand the verified trek dataset before relying on AI recommendations."],
+        safety_notes: ["Expand the verified trek dataset before relying on trip recommendations."],
         follow_up: "Please review the trek library and add more verified entries.",
-      });
+      } satisfies RecommendationPayload);
     }
 
-    const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_RECOMMENDER_MODEL || "gpt-5-mini",
-        input: [
-          {
-            role: "system",
-            content: [
-              {
-                type: "input_text",
-                text:
-                  "You are TrailSathi's Nepal trekking recommendation assistant. Use only the verified trek data provided. Do not invent treks, seasons, permit facts, routes, or costs. If the best answer is uncertain, say so briefly and stay factual.",
-              },
-            ],
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: `User request: ${trimmedPrompt}\n\nVerified trek shortlist:\n${JSON.stringify(
-                  context.shortlist,
-                  null,
-                  2
-                )}\n\nReturn only recommendations from that shortlist.`,
-              },
-            ],
-          },
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            ...recommendationSchema,
-          },
-        },
-      }),
-    });
+    const recommendations = context.shortlist.slice(0, 3).map((trek) => ({
+      slug: trek.slug,
+      name: trek.name,
+      region: trek.region,
+      why_fit: buildWhyFit(trimmedPrompt, trek),
+      duration_days: trek.duration_days,
+      difficulty: trek.difficulty,
+      max_altitude: trek.max_altitude,
+      permit_summary: trek.permit_summary,
+    }));
 
-    if (!openAiResponse.ok) {
-      const errorText = await openAiResponse.text();
-      return NextResponse.json(
-        { error: "OpenAI request failed.", details: errorText },
-        { status: 502 }
-      );
-    }
+    const payload: RecommendationPayload = {
+      summary: buildSummary(trimmedPrompt, recommendations.length),
+      recommendations,
+      safety_notes: buildSafetyNotes(trimmedPrompt, recommendations),
+      follow_up: buildFollowUp(trimmedPrompt, recommendations),
+    };
 
-    const responsePayload = await openAiResponse.json();
-    const outputText = extractOutputText(responsePayload);
-
-    if (!outputText) {
-      return NextResponse.json(
-        { error: "OpenAI returned no structured recommendation text." },
-        { status: 502 }
-      );
-    }
-
-    return NextResponse.json(JSON.parse(outputText));
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("Recommendation route failed", error);
 
@@ -147,35 +66,124 @@ export async function POST(request: Request) {
   }
 }
 
-function extractOutputText(payload: unknown) {
-  if (
-    typeof payload !== "object" ||
-    payload === null ||
-    !("output" in payload) ||
-    !Array.isArray(payload.output)
-  ) {
-    return null;
+type RecommendationItem = RecommendationPayload["recommendations"][number];
+
+function buildSummary(prompt: string, count: number) {
+  if (count === 1) {
+    return `Here is the strongest verified trek match for "${prompt}".`;
   }
 
-  for (const item of payload.output) {
-    if (
-      typeof item === "object" &&
-      item !== null &&
-      "content" in item &&
-      Array.isArray(item.content)
-    ) {
-      for (const contentPart of item.content) {
-        if (
-          typeof contentPart === "object" &&
-          contentPart !== null &&
-          contentPart.type === "output_text" &&
-          typeof contentPart.text === "string"
-        ) {
-          return contentPart.text;
-        }
-      }
+  return `Here are ${count} verified trek options that best match "${prompt}".`;
+}
+
+function buildWhyFit(
+  prompt: string,
+  trek: {
+    duration_days: number | null;
+    difficulty: string | null;
+    description: string | null;
+    best_seasons: string[] | null;
+    region: string;
+  }
+) {
+  const reasons: string[] = [];
+  const lowerPrompt = prompt.toLowerCase();
+
+  if (trek.duration_days) {
+    const requestedDays = extractDayPreference(lowerPrompt);
+    if (requestedDays !== null && Math.abs(trek.duration_days - requestedDays) <= 2) {
+      reasons.push(`its ${trek.duration_days}-day length is close to your requested timeframe`);
     }
   }
 
-  return null;
+  if (trek.difficulty) {
+    if (lowerPrompt.includes("easy") && trek.difficulty === "Easy") {
+      reasons.push("the difficulty matches an easier trekking preference");
+    } else if (lowerPrompt.includes("moderate") && trek.difficulty === "Moderate") {
+      reasons.push("the difficulty fits a moderate trekking plan");
+    } else if (
+      (lowerPrompt.includes("hard") || lowerPrompt.includes("challenging")) &&
+      trek.difficulty === "Hard"
+    ) {
+      reasons.push("the route suits a harder trekking goal");
+    }
+  }
+
+  if (trek.best_seasons?.length) {
+    const matchedSeason = trek.best_seasons.find((season) =>
+      lowerPrompt.includes(season.toLowerCase())
+    );
+    if (matchedSeason) {
+      reasons.push(`${matchedSeason} is already listed as a strong season for this route`);
+    }
+  }
+
+  if (reasons.length === 0 && trek.description) {
+    return trek.description;
+  }
+
+  if (reasons.length === 0) {
+    return `It is one of the stronger verified matches in the ${trek.region} region.`;
+  }
+
+  return `This looks like a good fit because ${joinReasons(reasons)}.`;
+}
+
+function buildSafetyNotes(prompt: string, recommendations: RecommendationItem[]) {
+  const notes = new Set<string>();
+  const highestAltitude = Math.max(
+    ...recommendations.map((recommendation) => recommendation.max_altitude ?? 0)
+  );
+  const lowerPrompt = prompt.toLowerCase();
+
+  if (highestAltitude >= 4000) {
+    notes.add("Several matching routes reach high altitude, so acclimatization planning matters.");
+  }
+
+  if (recommendations.some((recommendation) => recommendation.difficulty === "Hard")) {
+    notes.add("Hard routes need a realistic fitness check before you commit.");
+  }
+
+  if (lowerPrompt.includes("first time") || lowerPrompt.includes("beginner")) {
+    notes.add("As a first-time trekker, compare route length, altitude, and recovery days carefully.");
+  }
+
+  if (notes.size === 0) {
+    notes.add("Review permit rules, weather window, and route safety notes before finalizing.");
+  }
+
+  return Array.from(notes);
+}
+
+function buildFollowUp(prompt: string, recommendations: RecommendationItem[]) {
+  const top = recommendations[0];
+
+  if (!top) {
+    return "Add more verified treks to improve recommendation quality.";
+  }
+
+  const requestedDays = extractDayPreference(prompt.toLowerCase());
+
+  if (requestedDays !== null) {
+    return `Open ${top.name}, review the itinerary and permit section, and check whether ${top.duration_days ?? "the"} days work for your schedule.`;
+  }
+
+  return `Open ${top.name} first, then compare its route, permits, and safety notes with the other shortlisted options.`;
+}
+
+function extractDayPreference(prompt: string) {
+  const match = prompt.match(/(\d+)\s*(day|days)/);
+  return match ? Number(match[1]) : null;
+}
+
+function joinReasons(reasons: string[]) {
+  if (reasons.length === 1) {
+    return reasons[0];
+  }
+
+  if (reasons.length === 2) {
+    return `${reasons[0]} and ${reasons[1]}`;
+  }
+
+  return `${reasons.slice(0, -1).join(", ")}, and ${reasons[reasons.length - 1]}`;
 }
