@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowRight, MapPin, Users, Shield, Star } from "lucide-react";
 import { getVerifiedTreks } from "@/lib/treks";
 import { getTrekImageWithFallback } from "@/lib/trek-images";
+import { RecommenderPlanner } from "@/components/home/RecommenderPlanner";
 
 export default async function Home() {
   const treks = await getVerifiedTreks(3);
@@ -44,26 +45,7 @@ export default async function Home() {
           </p>
 
           {/* AI Input Box */}
-          <div className="bg-white rounded-xl p-4 max-w-2xl mx-auto shadow-xl">
-
-            <input
-              type="text"
-              placeholder="e.g. 7 days Nepal, Pokhara + Chitwan, budget $800"
-              className="w-full px-4 py-3 rounded-lg text-gray-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-
-            <button className="mt-3 w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">
-              Get my trip plan
-            </button>
-
-            {/* Suggestion Chips */}
-            <div className="flex flex-wrap gap-2 mt-3 justify-center text-xs">
-              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">7 days trip</span>
-              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">Pokhara + Chitwan</span>
-              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">Adventure sports</span>
-              <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">Budget $500</span>
-            </div>
-          </div>
+          <RecommenderPlanner />
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
