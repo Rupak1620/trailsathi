@@ -28,6 +28,12 @@ export type TrekPermit = {
   notes?: string;
 };
 
+export type GuideVerificationStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "suspended";
+
 export type Database = {
   public: {
     Tables: {
@@ -163,6 +169,126 @@ export type Database = {
           created_at?: string;
         };
       };
+      guides: {
+        Row: {
+          id: string;
+          slug: string;
+          full_name: string;
+          home_region: string | null;
+          base_location: string | null;
+          bio: string | null;
+          years_experience: number | null;
+          languages: string[] | null;
+          phone: string | null;
+          whatsapp: string | null;
+          email: string | null;
+          avatar_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          full_name: string;
+          home_region?: string | null;
+          base_location?: string | null;
+          bio?: string | null;
+          years_experience?: number | null;
+          languages?: string[] | null;
+          phone?: string | null;
+          whatsapp?: string | null;
+          email?: string | null;
+          avatar_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          full_name?: string;
+          home_region?: string | null;
+          base_location?: string | null;
+          bio?: string | null;
+          years_experience?: number | null;
+          languages?: string[] | null;
+          phone?: string | null;
+          whatsapp?: string | null;
+          email?: string | null;
+          avatar_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      guide_verifications: {
+        Row: {
+          id: string;
+          guide_id: string;
+          verification_status: GuideVerificationStatus;
+          license_number: string | null;
+          license_document_url: string | null;
+          reviewed_by: string | null;
+          verified_at: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          guide_id: string;
+          verification_status?: GuideVerificationStatus;
+          license_number?: string | null;
+          license_document_url?: string | null;
+          reviewed_by?: string | null;
+          verified_at?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          guide_id?: string;
+          verification_status?: GuideVerificationStatus;
+          license_number?: string | null;
+          license_document_url?: string | null;
+          reviewed_by?: string | null;
+          verified_at?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      guide_treks: {
+        Row: {
+          id: string;
+          guide_id: string;
+          trek_id: string;
+          years_guiding: number | null;
+          is_primary: boolean;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          guide_id: string;
+          trek_id: string;
+          years_guiding?: number | null;
+          is_primary?: boolean;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          guide_id?: string;
+          trek_id?: string;
+          years_guiding?: number | null;
+          is_primary?: boolean;
+          notes?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 };
@@ -170,3 +296,7 @@ export type Database = {
 export type TrekRow = Database["public"]["Tables"]["treks"]["Row"];
 export type TrekSourceRow = Database["public"]["Tables"]["trek_sources"]["Row"];
 export type TrekItineraryRow = Database["public"]["Tables"]["trek_itineraries"]["Row"];
+export type GuideRow = Database["public"]["Tables"]["guides"]["Row"];
+export type GuideVerificationRow =
+  Database["public"]["Tables"]["guide_verifications"]["Row"];
+export type GuideTrekRow = Database["public"]["Tables"]["guide_treks"]["Row"];
