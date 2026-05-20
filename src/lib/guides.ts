@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import type { GuideRow, GuideTrekRow, GuideVerificationRow } from "@/types/database";
 
-export type VerifiedGuide = GuideRow & {
+/** `updated_at` omitted from SELECT until all DBs run the guides migration. */
+export type VerifiedGuide = Omit<GuideRow, "updated_at"> & {
+  updated_at?: string;
   verification: GuideVerificationRow | null;
   trekLinks: GuideTrekRow[];
 };
@@ -20,8 +22,7 @@ const guideSelect = `
   email,
   avatar_url,
   is_active,
-  created_at,
-  updated_at
+  created_at
 `;
 
 export async function getActiveGuides(): Promise<VerifiedGuide[]> {
@@ -36,7 +37,7 @@ export async function getActiveGuides(): Promise<VerifiedGuide[]> {
     return [];
   }
 
-  const guideRows = (guides ?? []) as GuideRow[];
+  const guideRows = (guides ?? []) as Omit<GuideRow, "updated_at">[];
 
   if (!guideRows.length) {
     return [];
@@ -59,7 +60,7 @@ async function getApprovedGuideVerifications(guideIds: string[]) {
   const { data, error } = await supabase
     .from("guide_verifications")
     .select(
-      "id, guide_id, verification_status, license_number, license_document_url, reviewed_by, verified_at, notes, created_at, updated_at"
+      "id, guide_id, verification_status, license_number, license_document_url, reviewed_by, verified_at, notes, created_at"
     )
     .in("guide_id", guideIds)
     .eq("verification_status", "approved");

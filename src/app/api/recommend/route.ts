@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { buildRecommendationContext } from "@/lib/recommendation-context";
 
+const MAX_PROMPT_CHARS = 2000;
+const MAX_BODY_BYTES = 32_000;
+
 type RecommendationPayload = {
   summary: string;
   recommendations: Array<{
@@ -17,13 +20,46 @@ type RecommendationPayload = {
   follow_up: string;
 };
 
+function snippetForDisplay(text: string, max = 160) {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1)}…`;
+}
+
 export async function POST(request: Request) {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && Number(contentLength) > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: "Request body too large." }, { status: 413 });
+  }
+
   try {
-    const { prompt } = (await request.json()) as { prompt?: string };
-    const trimmedPrompt = prompt?.trim();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
+
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
+    }
+
+    const promptRaw = (body as Record<string, unknown>).prompt;
+    if (typeof promptRaw !== "string") {
+      return NextResponse.json({ error: "Please describe the kind of trek you want." }, { status: 400 });
+    }
+
+    const trimmedPrompt = promptRaw.trim();
 
     if (!trimmedPrompt) {
       return NextResponse.json({ error: "Please describe the kind of trek you want." }, { status: 400 });
+    }
+
+    if (trimmedPrompt.length > MAX_PROMPT_CHARS) {
+      return NextResponse.json(
+        { error: `Keep your description under ${MAX_PROMPT_CHARS} characters.` },
+        { status: 400 }
+      );
     }
 
     const context = await buildRecommendationContext(trimmedPrompt);
@@ -48,8 +84,9 @@ export async function POST(request: Request) {
       permit_summary: trek.permit_summary,
     }));
 
+    const displayPrompt = snippetForDisplay(trimmedPrompt);
     const payload: RecommendationPayload = {
-      summary: buildSummary(trimmedPrompt, recommendations.length),
+      summary: buildSummary(displayPrompt, recommendations.length),
       recommendations,
       safety_notes: buildSafetyNotes(trimmedPrompt, recommendations),
       follow_up: buildFollowUp(trimmedPrompt, recommendations),
@@ -68,12 +105,12 @@ export async function POST(request: Request) {
 
 type RecommendationItem = RecommendationPayload["recommendations"][number];
 
-function buildSummary(prompt: string, count: number) {
+function buildSummary(promptSnippet: string, count: number) {
   if (count === 1) {
-    return `Here is the strongest verified trek match for "${prompt}".`;
+    return `Here is the strongest verified trek match for “${promptSnippet}”.`;
   }
 
-  return `Here are ${count} verified trek options that best match "${prompt}".`;
+  return `Here are ${count} verified trek options that best match “${promptSnippet}”.`;
 }
 
 function buildWhyFit(
