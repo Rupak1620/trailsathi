@@ -1,6 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { TrekParallaxHero } from "@/components/trek/TrekParallaxHero";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -50,18 +51,12 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
       <section className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.3fr_0.7fr]">
         <div className="space-y-8">
           <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-            <div className="relative h-72 w-full sm:h-96">
-              <Image
-                src={getTrekImageWithFallback(trek.slug, trek.image_url)}
-                alt={trek.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 70vw"
-                priority
-              />
-            </div>
+            <TrekParallaxHero
+              src={getTrekImageWithFallback(trek.slug, trek.image_url)}
+              alt={trek.name}
+            />
 
-            <div className="space-y-5 p-6 sm:p-8">
+            <ScrollReveal className="space-y-5 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800">
                   {trek.region}
@@ -98,17 +93,17 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                   value={trek.difficulty || "Pending verification"}
                 />
               </div>
-            </div>
+            </ScrollReveal>
           </div>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+          <ScrollReveal className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
             <h2 className="text-xl font-semibold text-stone-900">Route Overview</h2>
             <p className="mt-3 leading-7 text-stone-600">
               {trek.route_overview || "Verified route overview coming soon."}
             </p>
-          </section>
+          </ScrollReveal>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+          <ScrollReveal delayMs={80} className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
             <h2 className="text-xl font-semibold text-stone-900">Highlights</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {(trek.highlights ?? []).length > 0 ? (
@@ -124,9 +119,9 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 <p className="text-stone-500">Highlights are still being verified.</p>
               )}
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+          <ScrollReveal delayMs={120} className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-semibold text-stone-900">Itinerary</h2>
               {itinerary.length > 0 ? (
@@ -172,9 +167,9 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 </p>
               </div>
             )}
-          </section>
+          </ScrollReveal>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+          <ScrollReveal delayMs={160} className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
             <div className="flex items-center gap-3">
               <ShieldAlert className="text-amber-600" size={20} />
               <h2 className="text-xl font-semibold text-stone-900">Safety Notes</h2>
@@ -190,11 +185,11 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             ) : (
               <p className="mt-4 text-stone-500">Safety notes are still being verified.</p>
             )}
-          </section>
+          </ScrollReveal>
         </div>
 
         <aside className="space-y-6">
-          <section className="rounded-2xl border border-stone-200 bg-white p-6">
+          <ScrollReveal className="rounded-2xl border border-stone-200 bg-white p-6">
             <h2 className="text-lg font-semibold text-stone-900">Permit Info</h2>
             <p className="mt-2 text-sm leading-6 text-stone-600">
               {trek.permit_details || "Permit notes are still being verified."}
@@ -237,9 +232,9 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             ) : (
               <p className="mt-4 text-sm text-stone-500">Structured permit pricing has not been added yet.</p>
             )}
-          </section>
+          </ScrollReveal>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6">
+          <ScrollReveal delayMs={80} className="rounded-2xl border border-stone-200 bg-white p-6">
             <h2 className="text-lg font-semibold text-stone-900">Best Season</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {(trek.best_seasons ?? []).length > 0 ? (
@@ -252,9 +247,9 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 <p className="text-sm text-stone-500">Season data is still being verified.</p>
               )}
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6">
+          <ScrollReveal delayMs={120} className="rounded-2xl border border-stone-200 bg-white p-6">
             <h2 className="text-lg font-semibold text-stone-900">Verification</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-3">
@@ -270,9 +265,9 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 <dd className="font-medium text-stone-900">{sources.length}</dd>
               </div>
             </dl>
-          </section>
+          </ScrollReveal>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-6">
+          <ScrollReveal delayMs={160} className="rounded-2xl border border-stone-200 bg-white p-6">
             <h2 className="text-lg font-semibold text-stone-900">Sources</h2>
             {sources.length > 0 ? (
               <div className="mt-4 space-y-4">
@@ -313,7 +308,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             ) : (
               <p className="mt-4 text-sm text-stone-500">Source records are still being added for this trek.</p>
             )}
-          </section>
+          </ScrollReveal>
         </aside>
       </section>
     </main>

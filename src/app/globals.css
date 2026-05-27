@@ -5,6 +5,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --nav-height: 4rem;
 }
 
 @theme inline {
@@ -24,5 +26,148 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* —— Page route transition —— */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: page-fade-in 0.4s var(--ease-out-expo) both;
+}
+
+/* —— Homepage hero (CSS only) —— */
+@keyframes hero-fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-reveal {
+  opacity: 0;
+  animation: hero-fade-slide-up 0.85s var(--ease-out-expo) forwards;
+}
+
+.hero-reveal--1 { animation-delay: 0.08s; }
+.hero-reveal--2 { animation-delay: 0.18s; }
+.hero-reveal--3 { animation-delay: 0.28s; }
+.hero-reveal--4 { animation-delay: 0.38s; }
+.hero-reveal--5 { animation-delay: 0.48s; }
+.hero-reveal--6 { animation-delay: 0.58s; }
+
+/* —— Trek cards —— */
+.trek-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.trek-card:hover {
+  transform: scale(1.02);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.08),
+    0 8px 10px -6px rgb(0 0 0 / 0.06);
+}
+
+/* —— Filter grid enter —— */
+@keyframes trek-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.trek-card-enter {
+  animation: trek-card-enter 0.45s var(--ease-out-expo) both;
+}
+
+/* —— Scroll reveal —— */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.65s var(--ease-out-expo),
+    transform 0.65s var(--ease-out-expo);
+}
+
+.scroll-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* —— AI planner results —— */
+@keyframes recommendation-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.recommendation-enter {
+  animation: recommendation-slide-up 0.6s var(--ease-out-expo) both;
+}
+
+.recommendation-card-enter {
+  opacity: 0;
+  animation: trek-card-enter 0.5s var(--ease-out-expo) both;
+}
+
+/* —— Navbar scroll —— */
+.navbar-shell {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: transform 0.35s var(--ease-out-expo);
+}
+
+.navbar-shell--hidden {
+  transform: translateY(-100%);
+}
+
+/* —— Reduced motion —— */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .hero-reveal,
+  .trek-card-enter,
+  .recommendation-enter,
+  .recommendation-card-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .trek-card:hover {
+    transform: none;
+  }
+
+  .navbar-shell,
+  .navbar-shell--hidden {
+    transition: none;
+    transform: none !important;
+  }
 }

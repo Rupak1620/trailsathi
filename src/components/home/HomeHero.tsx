@@ -1,43 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { animate, stagger } from "animejs";
 import { RecommenderPlanner } from "@/components/home/RecommenderPlanner";
 
 export function HomeHero() {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const root = contentRef.current;
-    if (!root) return;
-
-    const items = root.querySelectorAll<HTMLElement>("[data-hero-reveal]");
-    if (!items.length) return;
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      items.forEach((el) => {
-        el.style.opacity = "1";
-        el.style.transform = "none";
-      });
-      return;
-    }
-
-    items.forEach((el) => {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(20px)";
-    });
-
-    animate(items, {
-      opacity: { from: 0, to: 1 },
-      y: { from: 20, to: 0 },
-      duration: 780,
-      ease: "out(3)",
-      delay: stagger(85, { start: 120 }),
-    });
-  }, []);
-
   return (
     <section className="relative bg-gray-900 text-white">
       <div
@@ -49,42 +14,42 @@ export function HomeHero() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80" />
 
-      <div ref={contentRef} className="relative max-w-5xl mx-auto px-4 py-32 text-center">
-        <div data-hero-reveal className="inline-block bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-wider">
+      <div className="relative mx-auto max-w-5xl px-4 py-32 text-center">
+        <div className="hero-reveal hero-reveal--1 inline-block rounded-full bg-green-600 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
           AI-powered Nepal travel planner
         </div>
 
-        <h1 data-hero-reveal className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        <h1 className="hero-reveal hero-reveal--2 mb-6 text-4xl font-bold leading-tight md:text-6xl">
           Plan your perfect Nepal trip
           <br />
           <span className="text-green-400">with AI + local insight</span>
         </h1>
 
-        <p data-hero-reveal className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-          Tell us your time, budget, and interests — trekking, jungle safari, city tours, or adventure sports — TrailSathi
-          builds your perfect Nepal itinerary with real local insights.
+        <p className="hero-reveal hero-reveal--3 mx-auto mb-10 max-w-2xl text-lg text-gray-300">
+          Tell us your time, budget, and interests — trekking, jungle safari, city tours, or adventure sports —
+          TrailSathi builds your perfect Nepal itinerary with real local insights.
         </p>
 
-        <div data-hero-reveal>
+        <div className="hero-reveal hero-reveal--4">
           <RecommenderPlanner />
         </div>
 
-        <div data-hero-reveal className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+        <div className="hero-reveal hero-reveal--5 mt-8 flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/treks"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-8 py-4 font-medium text-white transition-colors hover:bg-green-700"
           >
             Explore treks <ArrowRight size={16} />
           </Link>
           <Link
             href="/guides"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-4 font-medium text-gray-900 transition-colors hover:bg-gray-100"
           >
             Find guides
           </Link>
         </div>
 
-        <div data-hero-reveal className="flex flex-wrap justify-center gap-6 mt-10 text-sm text-gray-300">
+        <div className="hero-reveal hero-reveal--6 mt-10 flex flex-wrap justify-center gap-6 text-sm text-gray-300">
           <div>🟢 500+ trekkers planning trips</div>
           <div>🟢 100+ verified guides</div>
           <div>🟢 Real-time travel insights</div>

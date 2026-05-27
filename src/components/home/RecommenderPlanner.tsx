@@ -104,7 +104,10 @@ export function RecommenderPlanner() {
       ) : null}
 
       {result ? (
-        <section className="mx-auto mt-10 max-w-5xl rounded-2xl bg-white/95 px-4 py-8 text-left text-stone-900 shadow-2xl">
+        <section
+          key={result.summary}
+          className="recommendation-enter mx-auto mt-10 max-w-5xl rounded-2xl bg-white/95 px-4 py-8 text-left text-stone-900 shadow-2xl"
+        >
           <div className="mx-auto max-w-4xl">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
               Verified recommendation
@@ -112,11 +115,12 @@ export function RecommenderPlanner() {
             <h2 className="mt-2 text-2xl font-bold">{result.summary}</h2>
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {result.recommendations.map((recommendation) => (
+              {result.recommendations.map((recommendation, index) => (
                 <Link
                   key={recommendation.slug}
                   href={`/treks/${recommendation.slug}`}
-                  className="rounded-2xl border border-stone-200 bg-stone-50 p-4 transition hover:border-emerald-200 hover:bg-white"
+                  className="recommendation-card-enter rounded-2xl border border-stone-200 bg-stone-50 p-4 transition hover:border-emerald-200 hover:bg-white"
+                  style={{ animationDelay: `${120 + index * 80}ms` }}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700">

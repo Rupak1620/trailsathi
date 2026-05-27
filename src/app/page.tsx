@@ -1,9 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, MapPin, Users, Shield, Star } from "lucide-react";
 import { getVerifiedTreks } from "@/lib/treks";
-import { getTrekImageWithFallback } from "@/lib/trek-images";
 import { HomeHero } from "@/components/home/HomeHero";
+import { TrekCard } from "@/components/trek/TrekCard";
 
 export default async function Home() {
   const treks = await getVerifiedTreks(3);
@@ -60,41 +59,9 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {treks?.map((trek) => (
-              <Link
-                href={`/treks/${trek.slug}`}
-                key={trek.id}
-                className="group border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-all bg-white"
-              >
-                <Image
-                  src={getTrekImageWithFallback(trek.slug, trek.image_url)}
-                  alt={trek.name}
-                  width={640}
-                  height={384}
-                  className="h-48 w-full object-cover"
-                />
-
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 group-hover:text-green-700">
-                      {trek.name}
-                    </h3>
-                    <span className="text-xs text-gray-400">
-                      {trek.difficulty}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-4">
-                    {trek.description}
-                  </p>
-
-                  <div className="flex items-center gap-4 text-xs text-gray-400">
-                    <span>{formatDuration(trek.duration_days)}</span>
-                    <span>{trek.max_altitude ? `${trek.max_altitude}m` : "Altitude pending"}</span>
-                  </div>
-                </div>
-              </Link>
+              <TrekCard key={trek.id} trek={trek} variant="compact" />
             ))}
           </div>
         </div>
@@ -194,10 +161,3 @@ const features = [
   },
 ];
 
-function formatDuration(duration: number | null) {
-  if (typeof duration === "number") {
-    return `${duration} days`;
-  }
-
-  return "Duration pending";
-}
