@@ -87,3 +87,42 @@ async function getGuideTrekLinks(guideIds: string[]) {
 
   return (data ?? []) as GuideTrekRow[];
 }
+
+export async function getGuidesForTrek(trekId: string): Promise<VerifiedGuide[]> {
+  const { data: links, error: linksError } = await supabase
+    .from("guide_treks")
+    .select("id, guide_id, trek_id, years_guiding, is_primary, notes, created_at")
+    .eq("trek_id", trekId);
+
+  if (linksError || !links?.length) {
+    if (linksError) {
+      console.error("Failed to load guide trek links", linksError);
+    }
+    return [];
+  }
+
+  const guideIds = links.map((l) => l.guide_id);
+
+  const { data: guides, error: guidesError } = await supabase
+    .from("guides")
+    .select(guideSelect)
+    .in("id", guideIds)
+    .eq("is_active", true);
+
+  if (guidesError || !guides?.length) {
+    if (guidesError) {
+      console.error("Failed to load guides for trek", guidesError);
+    }
+    return [];
+  }
+
+  const guideRows = guides as Omit<GuideRow, "updated_at">[];
+  const verifications = await getApprovedGuideVerifications(guideIds);
+
+  return guideRows.map((guide) => ({
+    ...guide,
+    verification: verifications.find((item) => item.guide_id === guide.id) ?? null,
+    trekLinks: (links as GuideTrekRow[]).filter((item) => item.guide_id === guide.id),
+  }));
+}
+

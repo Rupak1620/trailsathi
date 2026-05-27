@@ -3,6 +3,11 @@ import { notFound } from "next/navigation";
 import { TrekParallaxHero } from "@/components/trek/TrekParallaxHero";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SeasonalPlanner } from "@/components/trek/SeasonalPlanner";
+import { AltitudeWeatherPanel } from "@/components/trek/AltitudeWeatherPanel";
+import { AltitudeSicknessSosPanel } from "@/components/trek/AltitudeSicknessSosPanel";
+import { TrekGuidesSection } from "@/components/trek/TrekGuidesSection";
+import { TrekItineraryMap } from "@/components/trek/TrekItineraryMap";
+import { getGuidesForTrek } from "@/lib/guides";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -37,6 +42,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
   const permits = parsePermitCosts(trek.permit_costs);
   const sources = await getTrekSources(trek.id);
   const itinerary = await getTrekItinerary(trek.id);
+  const guides = await getGuidesForTrek(trek.id);
 
   return (
     <main className="min-h-screen bg-stone-50">
@@ -122,6 +128,10 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             </div>
           </ScrollReveal>
 
+          <ScrollReveal delayMs={110}>
+            <TrekItineraryMap trekName={trek.name} itinerary={itinerary} />
+          </ScrollReveal>
+
           <ScrollReveal delayMs={120} className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-semibold text-stone-900">Itinerary</h2>
@@ -171,6 +181,18 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
           </ScrollReveal>
 
           <ScrollReveal delayMs={140}>
+            <AltitudeWeatherPanel trekName={trek.name} maxAltitude={trek.max_altitude ?? 5416} />
+          </ScrollReveal>
+
+          <ScrollReveal delayMs={148}>
+            <AltitudeSicknessSosPanel trekName={trek.name} region={trek.region} />
+          </ScrollReveal>
+
+          <ScrollReveal delayMs={155}>
+            <TrekGuidesSection trekName={trek.name} trekId={trek.id} guides={guides} />
+          </ScrollReveal>
+
+          <ScrollReveal delayMs={170}>
             <SeasonalPlanner />
           </ScrollReveal>
 
