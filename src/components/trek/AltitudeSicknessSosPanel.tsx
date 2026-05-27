@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Share2,
   Sparkles,
+  Activity,
 } from "lucide-react";
 
 type AltitudeSicknessSosPanelProps = {
