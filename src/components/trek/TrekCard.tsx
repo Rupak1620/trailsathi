@@ -35,7 +35,7 @@ export function TrekCard({ trek, variant = "full", enterDelayMs, className = "" 
     return (
       <Link
         href={`/treks/${trek.slug}`}
-        className={`trek-card group overflow-hidden rounded-xl border border-gray-100 bg-white ${enterClass} ${className}`.trim()}
+        className={`trek-card group overflow-hidden rounded-2xl border border-stone-200 bg-white ${enterClass} ${className}`.trim()}
         style={enterStyle}
       >
         <div className="relative h-48 w-full overflow-hidden">
@@ -46,15 +46,27 @@ export function TrekCard({ trek, variant = "full", enterDelayMs, className = "" 
             height={384}
             className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+            <span className="rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+              {trek.region}
+            </span>
+            {trek.difficulty ? (
+              <span className="rounded-full bg-stone-900/65 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                {trek.difficulty}
+              </span>
+            ) : null}
+          </div>
         </div>
         <div className="p-5">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900 group-hover:text-green-700">{trek.name}</h3>
-            <span className="text-xs text-gray-400">{trek.difficulty}</span>
-          </div>
-          <p className="mb-4 line-clamp-2 text-sm text-gray-500">{trek.description}</p>
-          <div className="flex items-center gap-4 text-xs text-gray-400">
+          <h3 className="font-semibold text-stone-900 group-hover:text-emerald-700">
+            {trek.name}
+          </h3>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-500">
+            {trek.description}
+          </p>
+          <div className="mt-4 flex items-center gap-4 text-xs font-medium text-stone-500">
             <span>{formatDuration(trek.duration_days)}</span>
+            <span className="h-1 w-1 rounded-full bg-stone-300" />
             <span>{trek.max_altitude ? `${trek.max_altitude}m` : "Altitude pending"}</span>
           </div>
         </div>

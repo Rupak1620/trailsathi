@@ -65,9 +65,14 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
 
             <ScrollReveal className="space-y-5 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-800">
                   {trek.region}
                 </span>
+                {trek.difficulty ? (
+                  <span className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-semibold text-stone-700">
+                    {trek.difficulty}
+                  </span>
+                ) : null}
                 {trek.is_verified && (
                   <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                     <BadgeCheck size={14} />
@@ -129,7 +134,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
           </ScrollReveal>
 
           <ScrollReveal delayMs={110}>
-            <TrekItineraryMap trekName={trek.name} itinerary={itinerary} />
+            <TrekItineraryMap trekName={trek.name} itinerary={itinerary} region={trek.region} />
           </ScrollReveal>
 
           <ScrollReveal delayMs={120} className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
@@ -180,16 +185,23 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             )}
           </ScrollReveal>
 
-          <ScrollReveal delayMs={140}>
-            <AltitudeWeatherPanel trekName={trek.name} maxAltitude={trek.max_altitude ?? 5416} />
-          </ScrollReveal>
+          {trek.max_altitude ? (
+            <ScrollReveal delayMs={140}>
+              <AltitudeWeatherPanel trekName={trek.name} maxAltitude={trek.max_altitude} />
+            </ScrollReveal>
+          ) : null}
 
           <ScrollReveal delayMs={148}>
             <AltitudeSicknessSosPanel trekName={trek.name} region={trek.region} />
           </ScrollReveal>
 
           <ScrollReveal delayMs={155}>
-            <TrekGuidesSection trekName={trek.name} trekId={trek.id} guides={guides} />
+            <TrekGuidesSection
+              trekName={trek.name}
+              trekId={trek.id}
+              region={trek.region}
+              guides={guides}
+            />
           </ScrollReveal>
 
           <ScrollReveal delayMs={170}>
@@ -318,7 +330,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                           href={source.source_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-sm font-medium text-green-700 hover:text-green-800"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800"
                         >
                           Visit
                           <ExternalLink size={14} />
@@ -352,12 +364,16 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-      <div className="flex items-center gap-2 text-stone-500">
-        {icon}
-        <span className="text-sm">{label}</span>
+    <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+          {icon}
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+          {label}
+        </span>
       </div>
-      <p className="mt-3 text-lg font-semibold text-stone-900">{value}</p>
+      <p className="mt-3 text-lg font-bold text-stone-900">{value}</p>
     </div>
   );
 }

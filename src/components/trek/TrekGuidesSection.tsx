@@ -18,10 +18,12 @@ import type { VerifiedGuide } from "@/lib/guides";
 type TrekGuidesSectionProps = {
   trekName: string;
   trekId: string;
+  region?: string | null;
   guides: VerifiedGuide[];
 };
 
-export function TrekGuidesSection({ trekName, trekId, guides }: TrekGuidesSectionProps) {
+export function TrekGuidesSection({ trekName, region, guides }: TrekGuidesSectionProps) {
+  const regionLabel = (region && region.trim()) || "Nepal";
   const [selectedGuide, setSelectedGuide] = useState<VerifiedGuide | null>(null);
   const [connectSuccess, setConnectSuccess] = useState(false);
   const [name, setName] = useState("");
@@ -151,7 +153,7 @@ export function TrekGuidesSection({ trekName, trekId, guides }: TrekGuidesSectio
               </div>
               <h3 className="text-lg font-bold text-stone-900">Expert Match Request Received!</h3>
               <p className="mt-2 text-xs text-stone-600 leading-5 max-w-sm mx-auto">
-                Excellent! We have flagged your request. Our local network of verified guides in the Solukhumbu/Annapurna region will review your details.
+                Excellent! We&apos;ve flagged your request. Our local network of verified guides in the {regionLabel} region will review your details.
               </p>
               <div className="mt-5 rounded-lg bg-emerald-50 border border-emerald-100 p-3 max-w-md mx-auto text-left text-[11px] text-emerald-850 flex gap-2">
                 <Sparkles className="h-4 w-4 shrink-0 text-emerald-700 mt-0.5" />
@@ -168,7 +170,7 @@ export function TrekGuidesSection({ trekName, trekId, guides }: TrekGuidesSectio
               <div>
                 <h3 className="font-bold text-stone-800 text-sm">No Active Guides Registered on this Trail Yet</h3>
                 <p className="text-xs text-stone-500 mt-1 max-w-md mx-auto leading-5">
-                  Don&apos;t worry! TrailSathi has an off-platform network of over 100+ licensed guides in Nepal. Let us match you with a Solukhumbu/Annapurna expert for free.
+                  Don&apos;t worry — TrailSathi has an off-platform network of licensed guides across Nepal. Let us match you with a {regionLabel} expert for free.
                 </p>
               </div>
 

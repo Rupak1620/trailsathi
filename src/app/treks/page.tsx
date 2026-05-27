@@ -7,46 +7,58 @@ export default async function TreksPage() {
 
   return (
     <main className="min-h-screen bg-stone-50">
-      <section className="border-b border-stone-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-14">
+      <section className="relative overflow-hidden border-b border-stone-200 bg-white">
+        <div
+          className="absolute inset-x-0 top-0 h-64 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 25% 30%, #047857 1.5px, transparent 1.5px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        <div className="relative mx-auto max-w-6xl px-4 py-16">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-              Verified Trek Library
+              Verified trek library
             </div>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-900">Treks in Nepal</h1>
-            <p className="mt-4 text-lg leading-8 text-stone-600">
-              Browse source-backed routes across Nepal with clear difficulty, altitude, permit, and seasonal guidance.
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
+              Treks in Nepal
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
+              Source-backed routes across the Himalaya with clear difficulty, altitude, permit
+              fees, and seasonal guidance — all linked back to evidence.
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
             <SummaryCard
-              icon={<Mountain size={18} />}
+              icon={<Mountain size={20} />}
               label="Verified routes"
               value={`${treks.length}`}
-              detail="Only database-backed treks appear here"
+              detail="Only database-backed treks appear here."
             />
             <SummaryCard
-              icon={<BadgeCheck size={18} />}
+              icon={<BadgeCheck size={20} />}
               label="Trust-first"
-              value="Source linked"
-              detail="Every published trek should trace back to evidence"
+              value="Source-linked"
+              detail="Every published trek traces back to evidence."
             />
             <SummaryCard
-              icon={<ShieldAlert size={18} />}
+              icon={<ShieldAlert size={20} />}
               label="Permit clarity"
-              value="NPR first"
-              detail="Permit notes and fees stay grounded in Nepal context"
+              value="NPR-first"
+              detail="Real Nepali rupee fees, not generic prices."
             />
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        <div className="mb-4">
+      <section className="mx-auto max-w-6xl px-4 py-14">
+        <div className="mb-6">
           <h2 className="text-2xl font-semibold text-stone-900">Verified trek collection</h2>
-          <p className="mt-2 text-sm text-stone-500">
-            Clean, comparable cards for planning. Details open into the full trust page.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
+            Clean, comparable cards for planning. Open any trek for the full source-linked
+            profile, itinerary, and licensed guide directory.
           </p>
         </div>
 
@@ -68,12 +80,16 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
-      <div className="flex items-center gap-2 text-stone-500">
-        {icon}
-        <span className="text-sm">{label}</span>
+    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md">
+      <div className="flex items-center gap-2 text-emerald-700">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50">
+          {icon}
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+          {label}
+        </span>
       </div>
-      <p className="mt-3 text-2xl font-semibold text-stone-900">{value}</p>
+      <p className="mt-4 text-2xl font-bold text-stone-900">{value}</p>
       <p className="mt-1 text-sm leading-6 text-stone-500">{detail}</p>
     </div>
   );

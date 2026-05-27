@@ -68,28 +68,28 @@ export function RecommenderPlanner() {
 
   return (
     <>
-      <div className="bg-white rounded-xl p-4 max-w-2xl mx-auto shadow-xl">
+      <div className="mx-auto max-w-2xl rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-stone-200/50 sm:p-5">
         <textarea
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder="e.g. 7 days in Nepal, moderate fitness, first time trekker, budget under NPR 80,000"
-          className="min-h-28 w-full resize-none rounded-lg border border-gray-200 px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="min-h-28 w-full resize-none rounded-xl border border-stone-200 px-4 py-3 text-stone-800 placeholder:text-stone-400 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
         />
 
         <button
           onClick={handleSubmit}
           disabled={isLoading}
-          className="mt-3 w-full rounded-lg bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-3 w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isLoading ? "Planning..." : "Get my trip plan"}
         </button>
 
-        <div className="mt-3 flex flex-wrap gap-2 justify-center text-xs">
+        <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
           {promptSuggestions.map((suggestion) => (
             <button
               key={suggestion}
               onClick={() => setPrompt(suggestion)}
-              className="rounded-full bg-gray-100 px-3 py-1 text-gray-600 transition hover:bg-gray-200"
+              className="rounded-full bg-stone-100 px-3 py-1 text-stone-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
             >
               {suggestion}
             </button>
