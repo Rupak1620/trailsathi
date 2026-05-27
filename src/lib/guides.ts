@@ -101,7 +101,8 @@ export async function getGuidesForTrek(trekId: string): Promise<VerifiedGuide[]>
     return [];
   }
 
-  const guideIds = links.map((l) => l.guide_id);
+  const guideTrekLinks = links as GuideTrekRow[];
+  const guideIds = guideTrekLinks.map((l) => l.guide_id);
 
   const { data: guides, error: guidesError } = await supabase
     .from("guides")
@@ -122,7 +123,7 @@ export async function getGuidesForTrek(trekId: string): Promise<VerifiedGuide[]>
   return guideRows.map((guide) => ({
     ...guide,
     verification: verifications.find((item) => item.guide_id === guide.id) ?? null,
-    trekLinks: (links as GuideTrekRow[]).filter((item) => item.guide_id === guide.id),
+    trekLinks: guideTrekLinks.filter((item) => item.guide_id === guide.id),
   }));
 }
 
