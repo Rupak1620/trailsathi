@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TrekParallaxHero } from "@/components/trek/TrekParallaxHero";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { SeasonalPlanner } from "@/components/trek/SeasonalPlanner";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -167,6 +168,10 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
                 </p>
               </div>
             )}
+          </ScrollReveal>
+
+          <ScrollReveal delayMs={140}>
+            <SeasonalPlanner />
           </ScrollReveal>
 
           <ScrollReveal delayMs={160} className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
