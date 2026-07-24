@@ -48,16 +48,84 @@ body {
 @keyframes hero-fade-slide-up {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(24px) rotateX(8deg);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes hero-bg-drift {
+  0% {
+    transform: scale(1.08) translate3d(0, 0, 0) rotateZ(0deg);
+  }
+  50% {
+    transform: scale(1.14) translate3d(-1.5%, -1%, 0) rotateZ(0.4deg);
+  }
+  100% {
+    transform: scale(1.08) translate3d(0, 0, 0) rotateZ(0deg);
+  }
+}
+
+@keyframes hero-brand-depth {
+  from {
+    opacity: 0;
+    transform: translateZ(-80px) rotateX(18deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0) rotateX(0deg) scale(1);
+  }
+}
+
+@keyframes ai-planner-float {
+  0%,
+  100% {
+    transform: translateY(0) rotateX(2deg) rotateY(-1.5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(0deg) rotateY(1.5deg);
+  }
+}
+
+@keyframes ai-planner-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes step-flip-in {
+  from {
+    opacity: 0;
+    transform: rotateY(-55deg) translateZ(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0deg) translateZ(0);
+  }
+}
+
+@keyframes step-badge-pop {
+  from {
+    transform: scale(0.6) rotateY(-90deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
   }
 }
 
 .hero-reveal {
   opacity: 0;
+  transform-style: preserve-3d;
   animation: hero-fade-slide-up 0.85s var(--ease-out-expo) forwards;
 }
 
@@ -68,49 +136,108 @@ body {
 .hero-reveal--5 { animation-delay: 0.48s; }
 .hero-reveal--6 { animation-delay: 0.58s; }
 
-/* —— AI planner centerpiece glow —— */
-@keyframes ai-planner-pulse {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.02);
-  }
+.hero-bg-3d {
+  overflow: hidden;
+  transform-style: preserve-3d;
 }
 
+.hero-bg-3d__layer {
+  animation: hero-bg-drift 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-brand-3d {
+  transform-style: preserve-3d;
+  text-shadow:
+    0 1px 0 rgb(16 185 129 / 0.25),
+    0 8px 28px rgb(0 0 0 / 0.35);
+  animation: hero-brand-depth 1s var(--ease-out-expo) 0.2s both;
+}
+
+/* —— AI planner centerpiece 3D —— */
 .ai-planner-shell > div:first-child {
   animation: ai-planner-pulse 4.5s ease-in-out infinite;
 }
 
-/* —— Trek cards —— */
+.ai-planner-card {
+  transform-style: preserve-3d;
+  animation: ai-planner-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.ai-planner-card:hover {
+  animation-play-state: paused;
+  transform: translateY(-4px) rotateX(0deg) rotateY(0deg) scale(1.01);
+  transition: transform 0.35s var(--ease-out-expo);
+}
+
+/* —— Trek cards + pointer tilt —— */
+.tilt-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out;
+  will-change: transform;
+}
+
+.trek-card-tilt {
+  height: 100%;
+}
+
 .trek-card {
-  @apply transition-all duration-300 ease-out;
+  @apply transition-shadow duration-300 ease-out;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 .trek-card:hover {
-  transform: scale(1.02);
   box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.08),
-    0 8px 10px -6px rgb(0 0 0 / 0.06);
+    0 28px 40px -12px rgb(0 0 0 / 0.16),
+    0 12px 16px -8px rgb(0 0 0 / 0.08);
 }
 
 /* —— Filter grid enter —— */
 @keyframes trek-card-enter {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.97);
+    transform: perspective(900px) translateY(24px) rotateX(12deg) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: perspective(900px) translateY(0) rotateX(0deg) scale(1);
   }
 }
 
 .trek-card-enter {
-  animation: trek-card-enter 0.45s var(--ease-out-expo) both;
+  animation: trek-card-enter 0.55s var(--ease-out-expo) both;
+}
+
+/* —— How it works 3D steps —— */
+.step-3d {
+  transform-style: preserve-3d;
+  opacity: 0;
+  animation: step-flip-in 0.7s var(--ease-out-expo) forwards;
+}
+
+.step-3d--1 { animation-delay: 0.1s; }
+.step-3d--2 { animation-delay: 0.22s; }
+.step-3d--3 { animation-delay: 0.34s; }
+.step-3d--4 { animation-delay: 0.46s; }
+
+.step-3d__badge {
+  transform-style: preserve-3d;
+  animation: step-badge-pop 0.65s var(--ease-out-expo) both;
+  transition: transform 0.35s var(--ease-out-expo), box-shadow 0.35s ease;
+}
+
+.step-3d--1 .step-3d__badge { animation-delay: 0.2s; }
+.step-3d--2 .step-3d__badge { animation-delay: 0.32s; }
+.step-3d--3 .step-3d__badge { animation-delay: 0.44s; }
+.step-3d--4 .step-3d__badge { animation-delay: 0.56s; }
+
+.step-3d:hover .step-3d__badge {
+  transform: translateZ(18px) scale(1.08);
+  box-shadow:
+    0 14px 28px -8px rgb(5 150 105 / 0.45),
+    0 0 0 4px rgb(236 253 245);
 }
 
 /* —— Scroll reveal —— */
@@ -164,10 +291,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .page-transition,
   .hero-reveal,
+  .hero-brand-3d,
+  .hero-bg-3d__layer,
   .trek-card-enter,
   .recommendation-enter,
   .recommendation-card-enter,
-  .ai-planner-shell > div:first-child {
+  .ai-planner-shell > div:first-child,
+  .ai-planner-card,
+  .step-3d,
+  .step-3d__badge {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -179,8 +311,11 @@ body {
     transition: none;
   }
 
-  .trek-card:hover {
-    transform: none;
+  .tilt-3d,
+  .trek-card:hover,
+  .ai-planner-card:hover,
+  .step-3d:hover .step-3d__badge {
+    transform: none !important;
   }
 
   .navbar-shell,

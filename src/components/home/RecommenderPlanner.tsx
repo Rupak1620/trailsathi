@@ -69,12 +69,12 @@ export function RecommenderPlanner() {
 
   return (
     <>
-      <div className="ai-planner-shell relative mx-auto max-w-2xl">
+      <div className="ai-planner-shell relative mx-auto max-w-2xl [perspective:1000px]">
         <div
           className="pointer-events-none absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-emerald-400/40 via-emerald-500/20 to-teal-400/30 blur-xl"
           aria-hidden
         />
-        <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/95 p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-6">
+        <div className="ai-planner-card relative overflow-hidden rounded-2xl border border-white/20 bg-white/95 p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-left">
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm shadow-emerald-600/40">

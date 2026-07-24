@@ -48,15 +48,18 @@ export default async function Home() {
             </p>
           </div>
 
-          <ol className="relative mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          <ol className="relative mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 [perspective:800px]">
             <div
               className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-7 hidden h-px bg-gradient-to-r from-transparent via-emerald-300 to-transparent lg:block"
               aria-hidden
             />
             {steps.map((step, idx) => (
-              <li key={step.title} className="relative text-center lg:text-left">
+              <li
+                key={step.title}
+                className={`step-3d relative text-center lg:text-left step-3d--${idx + 1}`}
+              >
                 <div className="flex flex-col items-center lg:items-start">
-                  <span className="relative z-10 inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-lg font-bold text-white shadow-lg shadow-emerald-600/25 ring-4 ring-stone-50">
+                  <span className="step-3d__badge relative z-10 inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-lg font-bold text-white shadow-lg shadow-emerald-600/25 ring-4 ring-stone-50">
                     {idx + 1}
                   </span>
                   <h3 className="mt-5 text-lg font-semibold text-stone-900">{step.title}</h3>
