@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 type RecommendationResult = {
   summary: string;
@@ -68,32 +69,71 @@ export function RecommenderPlanner() {
 
   return (
     <>
-      <div className="mx-auto max-w-2xl rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-stone-200/50 sm:p-5">
-        <textarea
-          value={prompt}
-          onChange={(event) => setPrompt(event.target.value)}
-          placeholder="e.g. 7 days in Nepal, moderate fitness, first time trekker, budget under NPR 80,000"
-          className="min-h-28 w-full resize-none rounded-xl border border-stone-200 px-4 py-3 text-stone-800 placeholder:text-stone-400 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+      <div className="ai-planner-shell relative mx-auto max-w-2xl">
+        <div
+          className="pointer-events-none absolute -inset-3 rounded-[1.75rem] bg-gradient-to-br from-emerald-400/40 via-emerald-500/20 to-teal-400/30 blur-xl"
+          aria-hidden
         />
+        <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/95 p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-left">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm shadow-emerald-600/40">
+                <Sparkles size={18} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-stone-900">Ask TrailSathi</p>
+                <p className="text-xs text-stone-500">Grounded in verified trek data</p>
+              </div>
+            </div>
+            <span className="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 sm:inline">
+              AI planner
+            </span>
+          </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="mt-3 w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isLoading ? "Planning..." : "Get my trip plan"}
-        </button>
+          <textarea
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                void handleSubmit();
+              }
+            }}
+            placeholder="e.g. 7 days in Nepal, moderate fitness, first time trekker, budget under NPR 80,000"
+            rows={4}
+            className="min-h-[7.5rem] w-full resize-none rounded-xl border-2 border-stone-200 bg-stone-50/80 px-4 py-3.5 text-[15px] leading-6 text-stone-800 placeholder:text-stone-400 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/15"
+          />
 
-        <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
-          {promptSuggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              onClick={() => setPrompt(suggestion)}
-              className="rounded-full bg-stone-100 px-3 py-1 text-stone-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
-            >
-              {suggestion}
-            </button>
-          ))}
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-600/30 transition-all hover:bg-emerald-500 hover:shadow-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isLoading ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Planning your trek…
+              </>
+            ) : (
+              <>
+                Get my trip plan
+                <ArrowRight size={18} />
+              </>
+            )}
+          </button>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {promptSuggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => setPrompt(suggestion)}
+                className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -142,7 +182,9 @@ export function RecommenderPlanner() {
                     <div>
                       <dt className="text-stone-400">Duration</dt>
                       <dd className="font-medium text-stone-800">
-                        {recommendation.duration_days ? `${recommendation.duration_days} days` : "Pending"}
+                        {recommendation.duration_days
+                          ? `${recommendation.duration_days} days`
+                          : "Pending"}
                       </dd>
                     </div>
                     <div>
@@ -180,9 +222,7 @@ export function RecommenderPlanner() {
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
                   Next step
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-stone-700">
-                  {result.follow_up}
-                </p>
+                <p className="mt-3 text-sm leading-7 text-stone-700">{result.follow_up}</p>
               </div>
             </div>
           </div>

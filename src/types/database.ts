@@ -289,6 +289,38 @@ export type Database = {
           created_at?: string;
         };
       };
+      feedback: {
+        Row: {
+          id: string;
+          message: string;
+          rating: number | null;
+          category: string | null;
+          email: string | null;
+          page_path: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message: string;
+          rating?: number | null;
+          category?: string | null;
+          email?: string | null;
+          page_path?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          message?: string;
+          rating?: number | null;
+          category?: string | null;
+          email?: string | null;
+          page_path?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 };

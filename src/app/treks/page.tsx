@@ -54,11 +54,11 @@ export default async function TreksPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-14">
-        <div className="mb-6">
+        <div className="mb-8">
           <h2 className="text-2xl font-semibold text-stone-900">Verified trek collection</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
-            Clean, comparable cards for planning. Open any trek for the full source-linked
-            profile, itinerary, and licensed guide directory.
+            Search and filter source-linked routes. Each card shows a real trail photo, difficulty,
+            altitude, and permit summary — open any trek for the full profile and guides.
           </p>
         </div>
 

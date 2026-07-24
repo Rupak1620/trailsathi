@@ -68,6 +68,23 @@ body {
 .hero-reveal--5 { animation-delay: 0.48s; }
 .hero-reveal--6 { animation-delay: 0.58s; }
 
+/* —— AI planner centerpiece glow —— */
+@keyframes ai-planner-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+.ai-planner-shell > div:first-child {
+  animation: ai-planner-pulse 4.5s ease-in-out infinite;
+}
+
 /* —— Trek cards —— */
 .trek-card {
   @apply transition-all duration-300 ease-out;
@@ -149,7 +166,8 @@ body {
   .hero-reveal,
   .trek-card-enter,
   .recommendation-enter,
-  .recommendation-card-enter {
+  .recommendation-card-enter,
+  .ai-planner-shell > div:first-child {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

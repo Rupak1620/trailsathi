@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={geist.className}>
         <Navbar />
         <PageTransition>{children}</PageTransition>
+        <FeedbackWidget />
       </body>
     </html>
   );

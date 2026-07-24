@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Compass, Mountain } from "lucide-react";
 import { TrekCard, type TrekCardData } from "@/components/trek/TrekCard";
+import {
+  TrekFilters,
+  type TrekDifficultyFilter,
+} from "@/components/trek/TrekFilters";
 
 type TreksExplorerProps = {
   treks: TrekCardData[];
 };
 
-const difficulties = ["All", "Easy", "Moderate", "Hard", "Technical"] as const;
-
 export function TreksExplorer({ treks }: TreksExplorerProps) {
   const [query, setQuery] = useState("");
-  const [difficulty, setDifficulty] = useState<(typeof difficulties)[number]>("All");
+  const [difficulty, setDifficulty] = useState<TrekDifficultyFilter>("All");
   const [gridKey, setGridKey] = useState(0);
 
   const filtered = useMemo(() => {
@@ -34,47 +36,36 @@ export function TreksExplorer({ treks }: TreksExplorerProps) {
     setGridKey((k) => k + 1);
   }, [filteredSignature]);
 
+  function clearFilters() {
+    setQuery("");
+    setDifficulty("All");
+  }
+
+  if (treks.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center">
+        <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+          <Mountain size={28} />
+        </span>
+        <h3 className="mt-5 text-lg font-semibold text-stone-900">No verified treks yet</h3>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-500">
+          Trek profiles will appear here once they are added and verified in Supabase.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-md flex-1">
-          <label htmlFor="trek-search" className="sr-only">
-            Search treks
-          </label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
-            <input
-              id="trek-search"
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, region…"
-              className="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-10 pr-4 text-sm text-stone-900 transition-shadow focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {difficulties.map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => setDifficulty(level)}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-                difficulty === level
-                  ? "bg-emerald-700 text-white shadow-sm"
-                  : "border border-stone-200 bg-white text-stone-600 hover:border-emerald-200 hover:text-emerald-800"
-              }`}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mb-6 text-sm text-stone-500">
-        Showing {filtered.length} of {treks.length} verified {treks.length === 1 ? "trek" : "treks"}
-      </div>
+      <TrekFilters
+        query={query}
+        difficulty={difficulty}
+        totalCount={treks.length}
+        filteredCount={filtered.length}
+        onQueryChange={setQuery}
+        onDifficultyChange={setDifficulty}
+        onClear={clearFilters}
+      />
 
       {filtered.length > 0 ? (
         <div key={gridKey} className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -83,16 +74,21 @@ export function TreksExplorer({ treks }: TreksExplorerProps) {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center">
-          <p className="font-medium text-stone-800">No treks match your filters</p>
-          <p className="mt-2 text-sm text-stone-500">Try a different search term or difficulty level.</p>
+        <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center">
+          <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-500">
+            <Compass size={28} />
+          </span>
+          <h3 className="mt-5 text-lg font-semibold text-stone-900">
+            No treks match your filters
+          </h3>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-stone-500">
+            Try a different search term or difficulty level — or clear filters to see the full
+            verified collection.
+          </p>
           <button
             type="button"
-            onClick={() => {
-              setQuery("");
-              setDifficulty("All");
-            }}
-            className="mt-4 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+            onClick={clearFilters}
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
           >
             Clear filters
           </button>
