@@ -366,13 +366,14 @@ body {
   white-space: nowrap;
 }
 
-/* Mapbox attribution tweak — keep it subtle */
+/* MapLibre attribution — keep it subtle */
+.maplibregl-ctrl-attrib,
 .mapboxgl-ctrl-attrib {
   font-size: 9px !important;
   opacity: 0.7;
 }
 
-/* Ensure mapbox canvas fills its container */
+.maplibregl-canvas,
 .mapboxgl-canvas {
   outline: none;
 }

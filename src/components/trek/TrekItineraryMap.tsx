@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Map,
   Compass,
@@ -13,9 +14,18 @@ import {
 } from "lucide-react";
 import type { TrekRoutePoint } from "@/types/database";
 
-// Lazy-load the heavy Mapbox component so it doesn't bloat the initial bundle
-const TrekMap3D = lazy(() =>
-  import("@/components/trek/TrekMap3D").then((m) => ({ default: m.TrekMap3D }))
+// MapLibre uses browser APIs — never SSR this bundle on Vercel
+const TrekMap3D = dynamic(
+  () =>
+    import("@/components/trek/TrekMap3D").then((m) => m.TrekMap3D),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[520px] items-center justify-center rounded-2xl bg-stone-900">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+      </div>
+    ),
+  }
 );
 
 type ItineraryDay = {
@@ -190,15 +200,7 @@ export function TrekItineraryMap({ trekName, itinerary, region, routePoints = []
       </div>
 
       {viewMode === "3d" && has3DRoute ? (
-        <Suspense
-          fallback={
-            <div className="flex h-[520px] items-center justify-center rounded-2xl bg-stone-900">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-            </div>
-          }
-        >
-          <TrekMap3D trekName={trekName} points={routePoints} />
-        </Suspense>
+        <TrekMap3D trekName={trekName} points={routePoints} />
       ) : !hasItinerary ? (
         <div className="grid gap-4 md:grid-cols-[1fr_0.9fr] items-stretch">
           <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50/60 p-6 flex flex-col justify-center">

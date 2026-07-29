@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Ensure MapLibre bundles correctly on Vercel / Next.js
+  transpilePackages: ["maplibre-gl"],
   async headers() {
     return [
       {

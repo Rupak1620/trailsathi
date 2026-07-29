@@ -3,26 +3,22 @@
 /**
  * TrekMap3D — Interactive 3D terrain map for trail routes.
  *
- * Renders a Mapbox GL JS map with:
- *  • Satellite + terrain 3D basemap
- *  • Trek route as a styled LineString (glowing green trail line)
- *  • Each waypoint as a clickable marker (icon varies by point_type)
- *  • Fly-to animation when a stop is selected
- *  • Detailed stop card rendered in React DOM (not inside Mapbox popup)
- *
- * Requires NEXT_PUBLIC_MAPBOX_TOKEN environment variable.
- * Renders a graceful placeholder if the token is missing.
+ * Uses MapLibre GL (open-source, no API key / payment method) with:
+ *  • Free Esri satellite imagery + AWS Terrarium DEM for 3D terrain
+ *  • Trek route as a glowing LineString
+ *  • Clickable stop markers + React stop detail card (hotels, facilities, AMS)
+ *  • Fly-to, 2D/3D toggle, overnight quick-nav
  */
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-} from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+  Map as MapLibreMap,
+  Marker,
+  NavigationControl,
+  ScaleControl,
+  type StyleSpecification,
+} from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import {
   Mountain,
   Bed,
@@ -43,81 +39,125 @@ import {
 import type { TrekRoutePoint, RoutePointType } from "@/types/database";
 import { routeBounds, toGeoJSON } from "@/lib/trek-route";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 type Props = {
   trekName: string;
   points: TrekRoutePoint[];
 };
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+/** Free satellite + DEM style — no token required */
+function buildBaseStyle(): StyleSpecification {
+  return {
+    version: 8,
+    name: "TrailSathi Satellite Terrain",
+    sources: {
+      satellite: {
+        type: "raster",
+        tiles: [
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        ],
+        tileSize: 256,
+        attribution:
+          'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',
+        maxzoom: 19,
+      },
+      terrain: {
+        type: "raster-dem",
+        tiles: [
+          "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+        ],
+        encoding: "terrarium",
+        tileSize: 256,
+        maxzoom: 15,
+        attribution: "Elevation © Mapzen / AWS Terrain Tiles",
+      },
+    },
+    layers: [
+      {
+        id: "satellite",
+        type: "raster",
+        source: "satellite",
+        minzoom: 0,
+        maxzoom: 22,
+      },
+      {
+        id: "hillshade",
+        type: "hillshade",
+        source: "terrain",
+        paint: {
+          "hillshade-shadow-color": "#000000",
+          "hillshade-highlight-color": "#ffffff",
+          "hillshade-exaggeration": 0.35,
+        },
+      },
+    ],
+  };
+}
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
-
-// Point type → marker colour (CSS class suffix)
 const POINT_COLORS: Record<RoutePointType, string> = {
-  start:     "#10b981", // emerald
-  end:       "#6b7280", // grey
-  village:   "#f59e0b", // amber
-  teahouse:  "#f97316", // orange
-  camp:      "#8b5cf6", // violet
-  viewpoint: "#06b6d4", // cyan
-  pass:      "#ef4444", // red — the dramatic moment
-  base_camp: "#dc2626", // deep red
-  lake:      "#3b82f6", // blue
-  monastery: "#a855f7", // purple
+  start: "#10b981",
+  end: "#6b7280",
+  village: "#f59e0b",
+  teahouse: "#f97316",
+  camp: "#8b5cf6",
+  viewpoint: "#06b6d4",
+  pass: "#ef4444",
+  base_camp: "#dc2626",
+  lake: "#3b82f6",
+  monastery: "#a855f7",
 };
 
 const POINT_ICONS: Record<RoutePointType, string> = {
-  start:     "▶",
-  end:       "⬛",
-  village:   "🏘",
-  teahouse:  "🍵",
-  camp:      "⛺",
+  start: "▶",
+  end: "⬛",
+  village: "🏘",
+  teahouse: "🍵",
+  camp: "⛺",
   viewpoint: "👁",
-  pass:      "⛰",
+  pass: "⛰",
   base_camp: "🏔",
-  lake:      "💧",
+  lake: "💧",
   monastery: "🏯",
 };
 
 const FACILITY_ICONS: Record<string, React.ReactNode> = {
-  "Wi-Fi":             <Wifi size={12} />,
-  "Charging":          <Zap size={12} />,
-  "Hot shower":        <ShowerHead size={12} />,
-  "Restaurant":        <Utensils size={12} />,
-  "Western toilet":    <Droplets size={12} />,
-  "Yak-dung heating":  <span className="text-[10px]">🔥</span>,
-  "ATM nearby":        <span className="text-[10px]">💳</span>,
-  "Monastery views":   <span className="text-[10px]">🏯</span>,
-  "Manaslu views":     <Mountain size={12} />,
+  "Wi-Fi": <Wifi size={12} />,
+  Charging: <Zap size={12} />,
+  "Hot shower": <ShowerHead size={12} />,
+  Restaurant: <Utensils size={12} />,
+  "Western toilet": <Droplets size={12} />,
+  "Yak-dung heating": <span className="text-[10px]">🔥</span>,
+  "ATM nearby": <span className="text-[10px]">💳</span>,
+  "Monastery views": <span className="text-[10px]">🏯</span>,
+  "Manaslu views": <Mountain size={12} />,
 };
-
-// ── Main component ────────────────────────────────────────────────────────────
 
 export function TrekMap3D({ trekName, points }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const [selectedPoint, setSelectedPoint] = useState<TrekRoutePoint | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<Marker[]>([]);
+  const [selectedPoint, setSelectedPoint] = useState<TrekRoutePoint | null>(
+    null
+  );
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [is3D, setIs3D] = useState(true);
 
   const overnightPoints = points.filter((p) => p.is_overnight);
 
-  // ── Fly camera to a point ──────────────────────────────────────────────────
-  const flyToPoint = useCallback((point: TrekRoutePoint) => {
-    if (!mapRef.current) return;
-    mapRef.current.flyTo({
-      center: [point.longitude, point.latitude],
-      zoom: 13,
-      pitch: is3D ? 60 : 0,
-      bearing: 20,
-      duration: 1800,
-      essential: true,
-    });
-  }, [is3D]);
+  const flyToPoint = useCallback(
+    (point: TrekRoutePoint) => {
+      if (!mapRef.current) return;
+      mapRef.current.flyTo({
+        center: [point.longitude, point.latitude],
+        zoom: 13,
+        pitch: is3D ? 60 : 0,
+        bearing: 20,
+        duration: 1800,
+        essential: true,
+      });
+    },
+    [is3D]
+  );
 
   const selectPoint = useCallback(
     (point: TrekRoutePoint, index: number) => {
@@ -137,22 +177,18 @@ export function TrekMap3D({ trekName, points }: Props) {
     (direction: 1 | -1) => {
       const nextIndex = selectedIndex + direction;
       if (nextIndex < 0 || nextIndex >= overnightPoints.length) return;
-      const next = overnightPoints[nextIndex];
-      selectPoint(next, nextIndex);
+      selectPoint(overnightPoints[nextIndex], nextIndex);
     },
     [selectedIndex, overnightPoints, selectPoint]
   );
 
-  // ── Toggle 3D terrain ─────────────────────────────────────────────────────
   const toggle3D = useCallback(() => {
     if (!mapRef.current) return;
-    const map = mapRef.current;
     const next = !is3D;
     setIs3D(next);
-    map.easeTo({ pitch: next ? 55 : 0, duration: 700 });
+    mapRef.current.easeTo({ pitch: next ? 55 : 0, duration: 700 });
   }, [is3D]);
 
-  // ── Fit map to all route points ───────────────────────────────────────────
   const fitRoute = useCallback(() => {
     if (!mapRef.current || points.length === 0) return;
     const bounds = routeBounds(points);
@@ -166,59 +202,52 @@ export function TrekMap3D({ trekName, points }: Props) {
     );
   }, [points, is3D]);
 
-  // ── Initialise Mapbox ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!containerRef.current || !MAPBOX_TOKEN || mapRef.current) return;
-
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    if (!containerRef.current || mapRef.current || points.length === 0) return;
 
     const bounds = routeBounds(points);
 
-    const map = new mapboxgl.Map({
+    const map = new MapLibreMap({
       container: containerRef.current,
-      style: "mapbox://styles/mapbox/satellite-streets-v12",
+      style: buildBaseStyle(),
       pitch: 55,
       bearing: 0,
-      antialias: true,
+      maxPitch: 70,
       ...(bounds
         ? {
             bounds: [
               [bounds[0], bounds[1]],
               [bounds[2], bounds[3]],
-            ],
+            ] as [[number, number], [number, number]],
             fitBoundsOptions: { padding: 80, pitch: 55 },
           }
-        : { center: [85.3, 28.0], zoom: 7 }),
+        : { center: [85.3, 28.0] as [number, number], zoom: 7 }),
     });
 
     mapRef.current = map;
 
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
-    map.addControl(new mapboxgl.ScaleControl({ unit: "metric" }), "bottom-right");
+    map.addControl(
+      new NavigationControl({ visualizePitch: true }),
+      "top-right"
+    );
+    map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
 
     map.on("load", () => {
-      // ── Terrain & sky ──────────────────────────────────────────────────────
-      map.addSource("mapbox-dem", {
-        type: "raster-dem",
-        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-        tileSize: 512,
-        maxzoom: 14,
-      });
+      map.setTerrain({ source: "terrain", exaggeration: 1.8 });
 
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.8 });
+      try {
+        map.setSky({
+          "sky-color": "#1a2a4a",
+          "sky-horizon-blend": 0.5,
+          "horizon-color": "#f8c37b",
+          "horizon-fog-blend": 0.5,
+          "fog-color": "#c8d5e8",
+          "fog-ground-blend": 0.9,
+        });
+      } catch {
+        // Older MapLibre builds may not support setSky — terrain still works
+      }
 
-      // setSky exists in mapbox-gl v3+ — cast to any to avoid stale type defs
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (map as any).setSky({
-        "sky-color": "#1a2a4a",
-        "sky-horizon-blend": 0.5,
-        "horizon-color": "#f8c37b",
-        "horizon-fog-blend": 0.5,
-        "fog-color": "#c8d5e8",
-        "fog-ground-blend": 0.9,
-      });
-
-      // ── Route line ────────────────────────────────────────────────────────
       const geojson = toGeoJSON(points);
       const routeFeature = geojson.features.find(
         (f) => f.geometry.type === "LineString"
@@ -230,7 +259,6 @@ export function TrekMap3D({ trekName, points }: Props) {
           data: routeFeature,
         });
 
-        // Glow / halo layer underneath
         map.addLayer({
           id: "trek-route-glow",
           type: "line",
@@ -244,7 +272,6 @@ export function TrekMap3D({ trekName, points }: Props) {
           },
         });
 
-        // Main route line
         map.addLayer({
           id: "trek-route-line",
           type: "line",
@@ -254,12 +281,10 @@ export function TrekMap3D({ trekName, points }: Props) {
             "line-color": "#10b981",
             "line-width": 3.5,
             "line-opacity": 0.92,
-            "line-dasharray": [1, 0],
           },
         });
       }
 
-      // ── Waypoint markers ─────────────────────────────────────────────────
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
 
@@ -276,7 +301,13 @@ export function TrekMap3D({ trekName, points }: Props) {
           <div class="trek-marker__pin" style="background:${color}; box-shadow: 0 0 0 3px white, 0 0 0 5px ${color}40;">
             <span class="trek-marker__icon">${icon}</span>
           </div>
-          ${point.is_overnight ? `<div class="trek-marker__label" style="background:${color}">${point.day_number ? `D${point.day_number}` : ""}</div>` : ""}
+          ${
+            point.is_overnight
+              ? `<div class="trek-marker__label" style="background:${color}">${
+                  point.day_number ? `D${point.day_number}` : ""
+                }</div>`
+              : ""
+          }
         `;
 
         el.addEventListener("click", (e) => {
@@ -288,7 +319,7 @@ export function TrekMap3D({ trekName, points }: Props) {
           }
         });
 
-        const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+        const marker = new Marker({ element: el, anchor: "bottom" })
           .setLngLat([point.longitude, point.latitude])
           .addTo(map);
 
@@ -304,29 +335,24 @@ export function TrekMap3D({ trekName, points }: Props) {
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
-
-  // ── No token — show instructional placeholder ─────────────────────────────
-  if (!MAPBOX_TOKEN) {
-    return <MapTokenPlaceholder trekName={trekName} points={points} />;
-  }
+  }, []);
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl border border-stone-200 shadow-lg">
-      {/* Map container */}
       <div ref={containerRef} className="h-[520px] w-full bg-stone-900" />
 
-      {/* Loading overlay */}
       {!mapLoaded && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-          <p className="mt-4 text-sm font-medium text-stone-300">Loading 3D terrain…</p>
+          <p className="mt-4 text-sm font-medium text-stone-300">
+            Loading 3D terrain…
+          </p>
         </div>
       )}
 
-      {/* Map controls bar */}
       <div className="absolute left-4 top-4 flex flex-col gap-2">
         <button
+          type="button"
           onClick={toggle3D}
           title={is3D ? "Switch to 2D" : "Switch to 3D"}
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
@@ -334,6 +360,7 @@ export function TrekMap3D({ trekName, points }: Props) {
           <Mountain size={16} />
         </button>
         <button
+          type="button"
           onClick={fitRoute}
           title="Fit route"
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
@@ -342,14 +369,14 @@ export function TrekMap3D({ trekName, points }: Props) {
         </button>
       </div>
 
-      {/* Trek label */}
-      <div className="pointer-events-none absolute left-4 bottom-8 flex items-center gap-2 rounded-xl border border-white/15 bg-black/55 px-3 py-1.5 backdrop-blur-sm">
+      <div className="pointer-events-none absolute bottom-8 left-4 flex items-center gap-2 rounded-xl border border-white/15 bg-black/55 px-3 py-1.5 backdrop-blur-sm">
         <span className="h-2 w-2 rounded-full bg-emerald-400" />
         <span className="text-xs font-semibold text-white">{trekName}</span>
-        <span className="text-[10px] text-white/50">· {points.length} waypoints</span>
+        <span className="text-[10px] text-white/50">
+          · {points.length} waypoints
+        </span>
       </div>
 
-      {/* Stop detail card */}
       {selectedPoint && (
         <StopDetailCard
           point={selectedPoint}
@@ -361,12 +388,12 @@ export function TrekMap3D({ trekName, points }: Props) {
         />
       )}
 
-      {/* Stop pills strip — mobile/desktop quick-nav */}
       <div className="absolute bottom-0 left-0 right-0 overflow-x-auto">
         <div className="flex gap-1.5 px-4 pb-3 pt-1">
           {overnightPoints.map((p, i) => (
             <button
               key={p.id}
+              type="button"
               onClick={() => selectPoint(p, i)}
               className={`shrink-0 rounded-full border px-3 py-1 text-[10px] font-bold transition-all ${
                 selectedIndex === i
@@ -374,7 +401,8 @@ export function TrekMap3D({ trekName, points }: Props) {
                   : "border-white/20 bg-black/50 text-white/80 hover:bg-black/70"
               }`}
             >
-              {p.day_number ? `D${p.day_number}` : ""} {p.name.split(" ").slice(0, 2).join(" ")}
+              {p.day_number ? `D${p.day_number}` : ""}{" "}
+              {p.name.split(" ").slice(0, 2).join(" ")}
             </button>
           ))}
         </div>
@@ -382,8 +410,6 @@ export function TrekMap3D({ trekName, points }: Props) {
     </div>
   );
 }
-
-// ── Stop Detail Card ──────────────────────────────────────────────────────────
 
 function StopDetailCard({
   point,
@@ -404,24 +430,27 @@ function StopDetailCard({
     point.altitude_m >= 4200
       ? "Severe"
       : point.altitude_m >= 3000
-      ? "Moderate"
-      : "Safe";
+        ? "Moderate"
+        : "Safe";
 
   const priceLabel =
     point.stay_price_usd_min && point.stay_price_usd_max
       ? `$${point.stay_price_usd_min}–$${point.stay_price_usd_max}/night`
       : point.stay_price_usd_min
-      ? `From $${point.stay_price_usd_min}/night`
-      : null;
+        ? `From $${point.stay_price_usd_min}/night`
+        : null;
 
   const stayIcon =
-    point.stay_type === "luxury_lodge" ? <Star size={13} /> :
-    point.stay_type === "camping"      ? <Tent size={13} /> :
-    <Bed size={13} />;
+    point.stay_type === "luxury_lodge" ? (
+      <Star size={13} />
+    ) : point.stay_type === "camping" ? (
+      <Tent size={13} />
+    ) : (
+      <Bed size={13} />
+    );
 
   return (
     <div className="absolute right-4 top-4 z-10 w-72 overflow-hidden rounded-2xl border border-white/15 bg-black/75 shadow-2xl backdrop-blur-md sm:w-80">
-      {/* Header */}
       <div
         className="flex items-start justify-between gap-2 p-4"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
@@ -438,11 +467,11 @@ function StopDetailCard({
             >
               {point.point_type.replace("_", " ")}
             </span>
-            {point.day_number && (
+            {point.day_number ? (
               <span className="text-[9px] font-bold text-white/40">
                 Day {point.day_number}
               </span>
-            )}
+            ) : null}
           </div>
           <h3 className="mt-1.5 truncate text-sm font-bold text-white">
             {point.name}
@@ -457,8 +486,8 @@ function StopDetailCard({
                 amsRisk === "Severe"
                   ? "text-red-400"
                   : amsRisk === "Moderate"
-                  ? "text-amber-400"
-                  : "text-emerald-400"
+                    ? "text-amber-400"
+                    : "text-emerald-400"
               }`}
             >
               AMS: {amsRisk}
@@ -466,6 +495,7 @@ function StopDetailCard({
           </div>
         </div>
         <button
+          type="button"
           onClick={onClose}
           className="mt-0.5 shrink-0 rounded-lg p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
         >
@@ -473,33 +503,31 @@ function StopDetailCard({
         </button>
       </div>
 
-      {/* Description */}
-      {point.description && (
+      {point.description ? (
         <div className="px-4 pt-3 text-[11px] leading-5 text-white/70">
           {point.description}
         </div>
-      )}
+      ) : null}
 
-      {/* Special notes */}
-      {point.special_notes && (
+      {point.special_notes ? (
         <div className="mx-4 mt-3 flex gap-2 rounded-xl border border-amber-400/20 bg-amber-400/10 p-3">
           <AlertTriangle size={12} className="mt-0.5 shrink-0 text-amber-400" />
-          <p className="text-[11px] leading-5 text-amber-200">{point.special_notes}</p>
+          <p className="text-[11px] leading-5 text-amber-200">
+            {point.special_notes}
+          </p>
         </div>
-      )}
+      ) : null}
 
-      {/* Acclimatization badge */}
-      {point.is_acclimatization_day && (
+      {point.is_acclimatization_day ? (
         <div className="mx-4 mt-3 flex items-center gap-2 rounded-xl border border-blue-400/20 bg-blue-400/10 px-3 py-2">
           <span className="text-sm">🏕</span>
           <p className="text-[11px] font-semibold text-blue-200">
             Acclimatization day — rest & short hike
           </p>
         </div>
-      )}
+      ) : null}
 
-      {/* Stay info */}
-      {point.stay_type && point.stay_type !== "none" && (
+      {point.stay_type && point.stay_type !== "none" ? (
         <div className="mt-3 border-t border-white/8 px-4 pb-1 pt-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[11px] text-white/80">
@@ -509,15 +537,14 @@ function StopDetailCard({
                 {point.stay_name ? ` — ${point.stay_name}` : ""}
               </span>
             </div>
-            {priceLabel && (
+            {priceLabel ? (
               <span className="shrink-0 rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/70">
                 {priceLabel}
               </span>
-            )}
+            ) : null}
           </div>
 
-          {/* Facility pills */}
-          {point.stay_facilities.length > 0 && (
+          {point.stay_facilities.length > 0 ? (
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               {point.stay_facilities.map((f) => (
                 <span
@@ -529,13 +556,13 @@ function StopDetailCard({
                 </span>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
 
-      {/* Navigation footer */}
       <div className="mt-3 flex items-center justify-between border-t border-white/8 px-4 py-3">
         <button
+          type="button"
           onClick={onPrev}
           disabled={index === 0}
           className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white/60 transition hover:bg-white/10 hover:text-white disabled:pointer-events-none disabled:opacity-30"
@@ -547,6 +574,7 @@ function StopDetailCard({
           {index + 1} / {total}
         </span>
         <button
+          type="button"
           onClick={onNext}
           disabled={index === total - 1}
           className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white/60 transition hover:bg-white/10 hover:text-white disabled:pointer-events-none disabled:opacity-30"
@@ -554,35 +582,6 @@ function StopDetailCard({
           Next stop
           <ChevronRight size={14} />
         </button>
-      </div>
-    </div>
-  );
-}
-
-// ── Fallback: no Mapbox token ─────────────────────────────────────────────────
-
-function MapTokenPlaceholder({
-  trekName,
-  points,
-}: {
-  trekName: string;
-  points: TrekRoutePoint[];
-}) {
-  return (
-    <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-8 text-center">
-      <Mountain className="h-10 w-10 text-emerald-300" />
-      <div>
-        <p className="font-semibold text-stone-800">
-          3D Trail Map ready for {trekName}
-        </p>
-        <p className="mt-1 text-sm text-stone-500">
-          {points.length} waypoints loaded · Add{" "}
-          <code className="rounded bg-stone-100 px-1 font-mono text-xs">
-            NEXT_PUBLIC_MAPBOX_TOKEN
-          </code>{" "}
-          to <code className="rounded bg-stone-100 px-1 font-mono text-xs">.env.local</code>{" "}
-          to activate the map.
-        </p>
       </div>
     </div>
   );
