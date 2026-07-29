@@ -44,11 +44,11 @@ type Props = {
   points: TrekRoutePoint[];
 };
 
-/** Free satellite + DEM style — no token required */
+/** Fast first paint: satellite only. DEM / 3D is layered on after the map is visible. */
 function buildBaseStyle(): StyleSpecification {
   return {
     version: 8,
-    name: "TrailSathi Satellite Terrain",
+    name: "TrailSathi Satellite",
     sources: {
       satellite: {
         type: "raster",
@@ -57,18 +57,8 @@ function buildBaseStyle(): StyleSpecification {
         ],
         tileSize: 256,
         attribution:
-          'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',
-        maxzoom: 19,
-      },
-      terrain: {
-        type: "raster-dem",
-        tiles: [
-          "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
-        ],
-        encoding: "terrarium",
-        tileSize: 256,
-        maxzoom: 15,
-        attribution: "Elevation © Mapzen / AWS Terrain Tiles",
+          "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics",
+        maxzoom: 18,
       },
     },
     layers: [
@@ -79,18 +69,65 @@ function buildBaseStyle(): StyleSpecification {
         minzoom: 0,
         maxzoom: 22,
       },
-      {
-        id: "hillshade",
-        type: "hillshade",
-        source: "terrain",
-        paint: {
-          "hillshade-shadow-color": "#000000",
-          "hillshade-highlight-color": "#ffffff",
-          "hillshade-exaggeration": 0.35,
-        },
-      },
     ],
   };
+}
+
+function enableTerrain(map: MapLibreMap) {
+  if (map.getSource("terrain")) return;
+
+  try {
+    map.addSource("terrain", {
+      type: "raster-dem",
+      // Global Terrarium DEM — loaded AFTER first paint so the spinner never waits on it
+      tiles: [
+        "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+      ],
+      encoding: "terrarium",
+      tileSize: 256,
+      maxzoom: 12,
+      attribution: "Elevation © Mapzen / AWS Terrain Tiles",
+    });
+
+    const beforeId = map.getLayer("trek-route-glow")
+      ? "trek-route-glow"
+      : map.getLayer("trek-route-line")
+        ? "trek-route-line"
+        : undefined;
+
+    if (!map.getLayer("hillshade")) {
+      map.addLayer(
+        {
+          id: "hillshade",
+          type: "hillshade",
+          source: "terrain",
+          paint: {
+            "hillshade-shadow-color": "#000000",
+            "hillshade-highlight-color": "#ffffff",
+            "hillshade-exaggeration": 0.4,
+          },
+        },
+        beforeId
+      );
+    }
+
+    map.setTerrain({ source: "terrain", exaggeration: 1.5 });
+
+    try {
+      map.setSky({
+        "sky-color": "#1a2a4a",
+        "sky-horizon-blend": 0.5,
+        "horizon-color": "#f8c37b",
+        "horizon-fog-blend": 0.5,
+        "fog-color": "#c8d5e8",
+        "fog-ground-blend": 0.9,
+      });
+    } catch {
+      // optional
+    }
+  } catch (err) {
+    console.warn("[TrekMap3D] Terrain unavailable, using flat satellite", err);
+  }
 }
 
 const POINT_COLORS: Record<RoutePointType, string> = {
@@ -140,6 +177,7 @@ export function TrekMap3D({ trekName, points }: Props) {
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [terrainReady, setTerrainReady] = useState(false);
   const [is3D, setIs3D] = useState(true);
 
   const overnightPoints = points.filter((p) => p.is_overnight);
@@ -206,20 +244,24 @@ export function TrekMap3D({ trekName, points }: Props) {
     if (!containerRef.current || mapRef.current || points.length === 0) return;
 
     const bounds = routeBounds(points);
+    let cancelled = false;
+    let failsafeTimer: ReturnType<typeof setTimeout> | undefined;
 
+    // Start flatter so satellite tiles paint immediately; pitch up after terrain
     const map = new MapLibreMap({
       container: containerRef.current,
       style: buildBaseStyle(),
-      pitch: 55,
+      pitch: 35,
       bearing: 0,
       maxPitch: 70,
+      fadeDuration: 0,
       ...(bounds
         ? {
             bounds: [
               [bounds[0], bounds[1]],
               [bounds[2], bounds[3]],
             ] as [[number, number], [number, number]],
-            fitBoundsOptions: { padding: 80, pitch: 55 },
+            fitBoundsOptions: { padding: 80, pitch: 35, maxZoom: 11 },
           }
         : { center: [85.3, 28.0] as [number, number], zoom: 7 }),
     });
@@ -232,28 +274,25 @@ export function TrekMap3D({ trekName, points }: Props) {
     );
     map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
 
-    map.on("load", () => {
-      map.setTerrain({ source: "terrain", exaggeration: 1.8 });
+    const revealMap = () => {
+      if (cancelled) return;
+      setMapLoaded(true);
+      // Dynamic import can mount with wrong size — force a resize once visible
+      requestAnimationFrame(() => map.resize());
+    };
 
-      try {
-        map.setSky({
-          "sky-color": "#1a2a4a",
-          "sky-horizon-blend": 0.5,
-          "horizon-color": "#f8c37b",
-          "horizon-fog-blend": 0.5,
-          "fog-color": "#c8d5e8",
-          "fog-ground-blend": 0.9,
-        });
-      } catch {
-        // Older MapLibre builds may not support setSky — terrain still works
-      }
+    // Never leave the spinner up forever (slow networks / blocked tile CDNs)
+    failsafeTimer = setTimeout(revealMap, 1500);
+
+    const addRouteAndMarkers = () => {
+      if (cancelled) return;
 
       const geojson = toGeoJSON(points);
       const routeFeature = geojson.features.find(
         (f) => f.geometry.type === "LineString"
       ) as GeoJSON.Feature<GeoJSON.LineString> | undefined;
 
-      if (routeFeature) {
+      if (routeFeature && !map.getSource("trek-route")) {
         map.addSource("trek-route", {
           type: "geojson",
           data: routeFeature,
@@ -326,10 +365,31 @@ export function TrekMap3D({ trekName, points }: Props) {
         markersRef.current.push(marker);
       });
 
-      setMapLoaded(true);
+      revealMap();
+
+      // Terrain after first paint — never blocks the UI
+      window.setTimeout(() => {
+        if (cancelled || !mapRef.current) return;
+        enableTerrain(map);
+        if (!cancelled) {
+          setTerrainReady(true);
+          if (map.getTerrain()) {
+            map.easeTo({ pitch: 55, duration: 900 });
+          }
+        }
+      }, 300);
+    };
+
+    // style.load fires as soon as the style JSON is ready — does NOT wait for tiles
+    map.once("style.load", addRouteAndMarkers);
+    map.on("error", (e) => {
+      console.warn("[TrekMap3D]", e.error);
+      revealMap();
     });
 
     return () => {
+      cancelled = true;
+      if (failsafeTimer) clearTimeout(failsafeTimer);
       markersRef.current.forEach((m) => m.remove());
       map.remove();
       mapRef.current = null;
@@ -342,15 +402,21 @@ export function TrekMap3D({ trekName, points }: Props) {
       <div ref={containerRef} className="h-[520px] w-full bg-stone-900" />
 
       {!mapLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900">
+        <div className="pointer-events-none absolute inset-0 z-[1] flex flex-col items-center justify-center bg-stone-900/80">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
           <p className="mt-4 text-sm font-medium text-stone-300">
-            Loading 3D terrain…
+            Loading trail map…
           </p>
         </div>
       )}
 
-      <div className="absolute left-4 top-4 flex flex-col gap-2">
+      {mapLoaded && !terrainReady && (
+        <div className="pointer-events-none absolute left-1/2 top-4 z-[1] -translate-x-1/2 rounded-full border border-white/15 bg-black/55 px-3 py-1.5 text-[11px] font-medium text-white/80 backdrop-blur-sm">
+          Enhancing 3D terrain…
+        </div>
+      )}
+
+      <div className="absolute left-4 top-4 z-[2] flex flex-col gap-2">
         <button
           type="button"
           onClick={toggle3D}
@@ -369,7 +435,7 @@ export function TrekMap3D({ trekName, points }: Props) {
         </button>
       </div>
 
-      <div className="pointer-events-none absolute bottom-8 left-4 flex items-center gap-2 rounded-xl border border-white/15 bg-black/55 px-3 py-1.5 backdrop-blur-sm">
+      <div className="pointer-events-none absolute bottom-8 left-4 z-[2] flex items-center gap-2 rounded-xl border border-white/15 bg-black/55 px-3 py-1.5 backdrop-blur-sm">
         <span className="h-2 w-2 rounded-full bg-emerald-400" />
         <span className="text-xs font-semibold text-white">{trekName}</span>
         <span className="text-[10px] text-white/50">
@@ -388,7 +454,7 @@ export function TrekMap3D({ trekName, points }: Props) {
         />
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 overflow-x-auto">
+      <div className="absolute bottom-0 left-0 right-0 z-[2] overflow-x-auto">
         <div className="flex gap-1.5 px-4 pb-3 pt-1">
           {overnightPoints.map((p, i) => (
             <button
