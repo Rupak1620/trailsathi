@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { TrekParallaxHero } from "@/components/trek/TrekParallaxHero";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SeasonalPlanner } from "@/components/trek/SeasonalPlanner";
-import { AltitudeWeatherPanel } from "@/components/trek/AltitudeWeatherPanel";
+import { TrekWeatherWidget } from "@/components/trek/TrekWeatherWidget";
 import { AltitudeSicknessSosPanel } from "@/components/trek/AltitudeSicknessSosPanel";
 import { TrekGuidesSection } from "@/components/trek/TrekGuidesSection";
 import { TrekItineraryMap } from "@/components/trek/TrekItineraryMap";
@@ -28,6 +28,7 @@ import {
   getVerifiedTrekBySlug,
   parsePermitCosts,
 } from "@/lib/treks";
+import { getTrekRoutePoints } from "@/lib/trek-route";
 import { getTrekImageWithFallback } from "@/lib/trek-images";
 
 type TrekDetailPageProps = {
@@ -75,10 +76,11 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
   if (!trek) notFound();
 
   const permits = parsePermitCosts(trek.permit_costs);
-  const [sources, itinerary, guides] = await Promise.all([
+  const [sources, itinerary, guides, routePoints] = await Promise.all([
     getTrekSources(trek.id),
     getTrekItinerary(trek.id),
     getGuidesForTrek(trek.id),
+    getTrekRoutePoints(trek.id),
   ]);
 
   return (
@@ -191,12 +193,13 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             </div>
           </ScrollReveal>
 
-          {/* Map + elevation */}
+          {/* 3D Route Map + elevation profile */}
           <ScrollReveal delayMs={110}>
             <TrekItineraryMap
               trekName={trek.name}
               itinerary={itinerary}
               region={trek.region}
+              routePoints={routePoints}
             />
           </ScrollReveal>
 
@@ -270,13 +273,22 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
             )}
           </ScrollReveal>
 
-          {/* Altitude & weather */}
+          {/* Altitude & weather — shows real data when coordinates exist */}
           {trek.max_altitude ? (
             <ScrollReveal delayMs={140}>
-              <AltitudeWeatherPanel
-                trekName={trek.name}
-                maxAltitude={trek.max_altitude}
-              />
+              {trek.latitude && trek.longitude ? (
+                <TrekWeatherWidget
+                  trekName={trek.name}
+                  maxAltitude={trek.max_altitude}
+                  latitude={trek.latitude}
+                  longitude={trek.longitude}
+                />
+              ) : (
+                <AltitudeHealthPlaceholder
+                  trekName={trek.name}
+                  maxAltitude={trek.max_altitude}
+                />
+              )}
             </ScrollReveal>
           ) : null}
 
@@ -683,4 +695,24 @@ function formatVerifiedAt(value: string | null) {
     month: "short",
     day: "numeric",
   }).format(new Date(value));
+}
+
+/** Shown for treks that don't yet have GPS coordinates in the DB */
+function AltitudeHealthPlaceholder({
+  trekName,
+  maxAltitude,
+}: {
+  trekName: string;
+  maxAltitude: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
+      <p className="text-sm font-semibold text-stone-700">{trekName}</p>
+      <p className="mt-1 text-sm text-stone-500">
+        Max altitude: {maxAltitude.toLocaleString()} m. GPS coordinates not yet
+        set — run <code className="rounded bg-stone-100 px-1 font-mono text-xs">trek-coordinates-migration.sql</code> in
+        Supabase to enable real weather data.
+      </p>
+    </div>
+  );
 }

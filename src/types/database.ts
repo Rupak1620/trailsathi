@@ -55,6 +55,8 @@ export type Database = {
           highlights: string[] | null;
           safety_notes: string[] | null;
           image_url: string | null;
+          latitude: number | null;
+          longitude: number | null;
           is_verified: boolean;
           last_verified_at: string | null;
           created_at: string;
@@ -77,6 +79,8 @@ export type Database = {
           highlights?: string[] | null;
           safety_notes?: string[] | null;
           image_url?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
           is_verified?: boolean;
           last_verified_at?: string | null;
           created_at?: string;
@@ -99,6 +103,8 @@ export type Database = {
           highlights?: string[] | null;
           safety_notes?: string[] | null;
           image_url?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
           is_verified?: boolean;
           last_verified_at?: string | null;
           created_at?: string;
@@ -323,6 +329,52 @@ export type Database = {
       };
     };
   };
+};
+
+// ── Route point enums ────────────────────────────────────────────────────────
+export type RoutePointType =
+  | "start"
+  | "village"
+  | "teahouse"
+  | "camp"
+  | "viewpoint"
+  | "pass"
+  | "base_camp"
+  | "lake"
+  | "monastery"
+  | "end";
+
+export type StayType =
+  | "teahouse"
+  | "lodge"
+  | "luxury_lodge"
+  | "camping"
+  | "homestay"
+  | "none";
+
+// ── Route point row ──────────────────────────────────────────────────────────
+export type TrekRoutePoint = {
+  id: string;
+  trek_id: string;
+  sequence_order: number;
+  day_number: number | null;
+  name: string;
+  latitude: number;
+  longitude: number;
+  altitude_m: number;
+  point_type: RoutePointType;
+  is_overnight: boolean;
+  is_acclimatization_day: boolean;
+  description: string | null;
+  special_notes: string | null;
+  stay_type: StayType | null;
+  stay_name: string | null;
+  stay_price_usd_min: number | null;
+  stay_price_usd_max: number | null;
+  stay_facilities: string[];
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type TrekRow = Database["public"]["Tables"]["treks"]["Row"];

@@ -8,10 +8,6 @@ import {
   Flame,
   Thermometer,
   Sparkles,
-  ClipboardList,
-  CheckSquare,
-  Square,
-  FileDown,
   Info,
 } from "lucide-react";
 
@@ -81,47 +77,11 @@ const seasonalInfo: Record<SeasonKey, SeasonData> = {
   },
 };
 
-const basePackingList = [
-  { item: "Valid Passport & Permits", category: "Documents" },
-  { item: "Cash (NPR) - ATM access is rare on trails", category: "Documents" },
-  { item: "Sturdy hiking boots (broken-in)", category: "Clothing" },
-  { item: "Moisture-wicking socks (3-4 pairs)", category: "Clothing" },
-  { item: "First-aid kit with altitude medicine (Acetazolamide/Diamox)", category: "Safety" },
-  { item: "Water purification tablets or filter bottle", category: "Gear" },
-  { item: "LED Headlamp with spare batteries", category: "Gear" },
-  { item: "Trekking towel & eco-friendly soap", category: "Personal" },
-];
 
 export function SeasonalPlanner() {
   const [selectedSeason, setSelectedSeason] = useState<SeasonKey>("autumn");
-  const [packingItems, setPackingList] = useState<Array<{ item: string; checked: boolean; category: string }>>(() => {
-    // initialize packing list with baseline items
-    return basePackingList.map((p) => ({ ...p, checked: false }));
-  });
 
   const activeSeason = seasonalInfo[selectedSeason];
-
-  // Dynamic packing list combining base items and seasonal gear
-  const displayPackingList = [
-    ...packingItems,
-    ...activeSeason.extraGear.map((g) => ({
-      item: `${g} (Season Essential)`,
-      checked: false,
-      category: "Seasonal",
-    })),
-  ];
-
-  const [toggledStates, setToggledStates] = useState<Record<string, boolean>>({});
-
-  const handleToggle = (itemText: string) => {
-    setToggledStates((prev) => ({
-      ...prev,
-      [itemText]: !prev[itemText],
-    }));
-  };
-
-  const completedCount = Object.values(toggledStates).filter(Boolean).length;
-  const progressPercent = Math.round((completedCount / displayPackingList.length) * 100);
 
   const getSeasonIcon = (season: SeasonKey) => {
     switch (season) {
@@ -159,7 +119,6 @@ export function SeasonalPlanner() {
               type="button"
               onClick={() => {
                 setSelectedSeason(key);
-                setToggledStates({}); // reset checkboxes on season change
               }}
               className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
                 active
@@ -223,61 +182,6 @@ export function SeasonalPlanner() {
         </div>
       </div>
 
-      {/* Checklist section */}
-      <div className="border-t border-stone-100 pt-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-emerald-600" />
-            Interactive Packing Checklist ({completedCount}/{displayPackingList.length} packed)
-          </h3>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-600 bg-white hover:bg-stone-50 transition-colors"
-          >
-            <FileDown className="h-3.5 w-3.5" /> Print Checklist
-          </button>
-        </div>
-
-        {/* Packing list progress bar */}
-        <div className="mb-4 h-2 w-full rounded-full bg-stone-100 overflow-hidden">
-          <div
-            className="h-full bg-emerald-600 transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1 p-0.5">
-          {displayPackingList.map((item, idx) => {
-            const checked = !!toggledStates[item.item];
-            return (
-              <div
-                key={`${item.item}-${idx}`}
-                onClick={() => handleToggle(item.item)}
-                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer select-none transition-all ${
-                  checked
-                    ? "border-emerald-200 bg-emerald-50/30 text-stone-500 line-through"
-                    : "border-stone-200 bg-white hover:border-emerald-200 text-stone-800"
-                }`}
-              >
-                <div className="mt-0.5 shrink-0 text-emerald-600">
-                  {checked ? <CheckSquare className="h-4.5 w-4.5" /> : <Square className="h-4.5 w-4.5" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate">{item.item}</p>
-                  <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                    item.category === "Seasonal"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-stone-100 text-stone-500"
-                  }`}>
-                    {item.category}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </section>
   );
 }

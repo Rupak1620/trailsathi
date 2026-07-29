@@ -5,8 +5,6 @@ import {
   Users,
   ShieldCheck,
   Sparkles,
-  HeartPulse,
-  BadgeCheck,
 } from "lucide-react";
 import { getVerifiedTreks } from "@/lib/treks";
 import { HomeHero } from "@/components/home/HomeHero";
@@ -130,8 +128,7 @@ export default async function Home() {
               Built for Nepal, by trekkers who know it
             </h2>
             <p className="mt-4 text-base leading-7 text-stone-600">
-              We pair AI planning with real ground truth — verified routes, real fees, and
-              licensed local guides.
+              AI planning grounded in real verified routes, permit fees in NPR, and licensed local guides.
             </p>
           </div>
 
@@ -146,23 +143,6 @@ export default async function Home() {
                 </span>
                 <h3 className="mt-5 text-base font-semibold text-stone-900">{f.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-stone-500">{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TRUST PILLARS */}
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-5xl px-4">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {trustPillars.map((pillar) => (
-              <div key={pillar.label} className="text-center">
-                <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-                  <pillar.icon size={22} />
-                </span>
-                <p className="mt-4 text-sm font-semibold text-stone-900">{pillar.label}</p>
-                <p className="mt-1 text-xs leading-5 text-stone-500">{pillar.detail}</p>
               </div>
             ))}
           </div>
@@ -304,12 +284,6 @@ const features = [
   },
 ];
 
-const trustPillars = [
-  { icon: BadgeCheck, label: "Source-cited", detail: "Every trek links to official sources." },
-  { icon: ShieldCheck, label: "License-verified", detail: "Guides pass identity and license checks." },
-  { icon: HeartPulse, label: "Safety-aware", detail: "AMS scoring and helicopter contacts." },
-  { icon: MapPin, label: "Made in Nepal", detail: "Built by Nepali developers and trekkers." },
-];
 
 function FooterColumn({
   title,

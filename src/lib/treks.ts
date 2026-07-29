@@ -23,6 +23,8 @@ const verifiedTrekSelect = `
   highlights,
   safety_notes,
   image_url,
+  latitude,
+  longitude,
   is_verified,
   last_verified_at
 `;

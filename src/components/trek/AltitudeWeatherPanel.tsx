@@ -8,13 +8,8 @@ import {
   ShieldAlert,
   Droplets,
   HeartPulse,
-  Sparkles,
   Info,
-  Calendar,
   AlertTriangle,
-  Sun,
-  CloudRain,
-  Snowflake,
 } from "lucide-react";
 
 type AltitudeWeatherPanelProps = {
@@ -95,14 +90,6 @@ export function AltitudeWeatherPanel({ trekName, maxAltitude }: AltitudeWeatherP
     return { temp, feelsLike, wind, humidity, oxygen, status, amsRisk, advice };
   })();
 
-  // 5-day simulated forecast for chosen altitude
-  const forecast = [
-    { day: "Today", icon: <Sun className="h-5 w-5 text-amber-500" />, temp: weather.temp, desc: weather.status },
-    { day: "Thu", icon: <CloudSun className="h-5 w-5 text-stone-500" />, temp: weather.temp - 1, desc: "Partly Cloudy" },
-    { day: "Fri", icon: <CloudSun className="h-5 w-5 text-stone-500" />, temp: weather.temp - 2, desc: "Partly Cloudy" },
-    { day: "Sat", icon: <Snowflake className="h-5 w-5 text-sky-400" />, temp: weather.temp - 4, desc: "Light Snow" },
-    { day: "Sun", icon: <Sun className="h-5 w-5 text-amber-500" />, temp: weather.temp + 1, desc: "Sunny Morning" },
-  ];
 
   return (
     <section className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8 shadow-sm">
@@ -249,23 +236,6 @@ export function AltitudeWeatherPanel({ trekName, maxAltitude }: AltitudeWeatherP
         </div>
       </div>
 
-      {/* 5-Day Forecast Widget */}
-      <div className="border-t border-stone-150 pt-5">
-        <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5 text-stone-400" />
-          Simulated Micro-Climate Forecast at {currentAltitude}m
-        </h3>
-        <div className="grid grid-cols-5 gap-2 text-center">
-          {forecast.map((f, i) => (
-            <div key={i} className="bg-stone-50 rounded-lg p-2.5 border border-stone-150/60">
-              <p className="text-[10px] text-stone-500 font-bold uppercase">{f.day}</p>
-              <div className="my-1.5 flex justify-center">{f.icon}</div>
-              <p className="text-xs font-bold text-stone-900 font-mono">{f.temp}°C</p>
-              <p className="text-[9px] text-stone-400 mt-0.5 leading-3 block truncate">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import {
   Map,
   Compass,
@@ -9,7 +9,14 @@ import {
   ShieldCheck,
   Eye,
   ClipboardList,
+  Mountain,
 } from "lucide-react";
+import type { TrekRoutePoint } from "@/types/database";
+
+// Lazy-load the heavy Mapbox component so it doesn't bloat the initial bundle
+const TrekMap3D = lazy(() =>
+  import("@/components/trek/TrekMap3D").then((m) => ({ default: m.TrekMap3D }))
+);
 
 type ItineraryDay = {
   id: string;
@@ -24,6 +31,8 @@ type TrekItineraryMapProps = {
   trekName: string;
   itinerary: ItineraryDay[];
   region?: string | null;
+  /** When provided, renders the full 3D Mapbox trail map instead of the OSM iframe */
+  routePoints?: TrekRoutePoint[];
 };
 
 type RegionKey =
@@ -62,10 +71,13 @@ function detectRegion(trekName: string, region?: string | null): RegionKey {
   return "default";
 }
 
-export function TrekItineraryMap({ trekName, itinerary, region }: TrekItineraryMapProps) {
+export function TrekItineraryMap({ trekName, itinerary, region, routePoints = [] }: TrekItineraryMapProps) {
+  const has3DRoute = routePoints.length > 0;
   const hasItinerary = itinerary.length > 0;
   const [activeDayIndex, setActiveDayIndex] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<"elevation" | "terrain">("elevation");
+  const [viewMode, setViewMode] = useState<"elevation" | "terrain" | "3d">(
+    has3DRoute ? "3d" : "elevation"
+  );
 
   useEffect(() => {
     setActiveDayIndex(0);
@@ -133,8 +145,22 @@ export function TrekItineraryMap({ trekName, itinerary, region }: TrekItineraryM
           </p>
         </div>
 
-        {hasItinerary ? (
-          <div className="flex bg-stone-100 p-1 rounded-xl self-start">
+        <div className="flex bg-stone-100 p-1 rounded-xl self-start">
+          {has3DRoute && (
+            <button
+              type="button"
+              onClick={() => setViewMode("3d")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === "3d"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              <Mountain className="h-3.5 w-3.5" />
+              3D Map
+            </button>
+          )}
+          {hasItinerary && (
             <button
               type="button"
               onClick={() => setViewMode("elevation")}
@@ -147,23 +173,33 @@ export function TrekItineraryMap({ trekName, itinerary, region }: TrekItineraryM
               <TrendingUp className="h-3.5 w-3.5" />
               Altitude
             </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("terrain")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                viewMode === "terrain"
-                  ? "bg-white text-stone-900 shadow-sm"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              <Map className="h-3.5 w-3.5" />
-              Topo map
-            </button>
-          </div>
-        ) : null}
+          )}
+          <button
+            type="button"
+            onClick={() => setViewMode("terrain")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              viewMode === "terrain"
+                ? "bg-white text-stone-900 shadow-sm"
+                : "text-stone-600 hover:text-stone-900"
+            }`}
+          >
+            <Map className="h-3.5 w-3.5" />
+            Topo
+          </button>
+        </div>
       </div>
 
-      {!hasItinerary ? (
+      {viewMode === "3d" && has3DRoute ? (
+        <Suspense
+          fallback={
+            <div className="flex h-[520px] items-center justify-center rounded-2xl bg-stone-900">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+            </div>
+          }
+        >
+          <TrekMap3D trekName={trekName} points={routePoints} />
+        </Suspense>
+      ) : !hasItinerary ? (
         <div className="grid gap-4 md:grid-cols-[1fr_0.9fr] items-stretch">
           <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50/60 p-6 flex flex-col justify-center">
             <div className="flex items-center gap-2 text-stone-500">
