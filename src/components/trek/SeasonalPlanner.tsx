@@ -101,7 +101,7 @@ export function SeasonalPlanner() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-bold text-stone-900">Seasonal Weather &amp; Smart Gear Planner</h2>
-          <p className="text-sm text-stone-500 mt-1">Select your planned trekking season to generate custom safety tips and packing list.</p>
+          <p className="text-sm text-stone-500 mt-1">Select your planned trekking season for conditions, temps, and gear notes.</p>
         </div>
         <div className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 border border-emerald-100 shrink-0 self-start sm:self-auto">
           <Sparkles className="h-3.5 w-3.5" />

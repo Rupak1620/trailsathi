@@ -78,7 +78,7 @@ export default async function Home() {
                 Verified treks
               </p>
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-                Popular routes across Nepal
+                Popular destinations across Nepal
               </h2>
               <p className="mt-3 text-base leading-7 text-stone-600">
                 Hand-picked, source-cited trek profiles. Permits, altitudes, and difficulty kept
@@ -245,15 +245,15 @@ export default async function Home() {
 const steps = [
   {
     title: "Tell us your plan",
-    desc: "Budget, days, fitness, interests — just the basics.",
+    desc: "Budget, days, fitness, interests - just the basics.",
   },
   {
     title: "Get AI matches",
-    desc: "Treks ranked for your profile, with permits and altitudes.",
+    desc: "Treks ranked for your profile, with all the details included like permits and altitudes.",
   },
   {
     title: "Connect with guides",
-    desc: "Direct, verified local guides — no agency middleman.",
+    desc: "Direct, verified local guides - no agency middleman.",
   },
   {
     title: "Trek with confidence",
