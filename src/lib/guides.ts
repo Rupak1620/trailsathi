@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { supabase } from "@/lib/supabase";
 import type { GuideRow, GuideTrekRow, GuideVerificationRow } from "@/types/database";
 
@@ -88,7 +89,7 @@ async function getGuideTrekLinks(guideIds: string[]) {
   return (data ?? []) as GuideTrekRow[];
 }
 
-export async function getGuidesForTrek(trekId: string): Promise<VerifiedGuide[]> {
+async function loadGuidesForTrek(trekId: string): Promise<VerifiedGuide[]> {
   const { data: links, error: linksError } = await supabase
     .from("guide_treks")
     .select("id, guide_id, trek_id, years_guiding, is_primary, notes, created_at")
@@ -125,5 +126,13 @@ export async function getGuidesForTrek(trekId: string): Promise<VerifiedGuide[]>
     verification: verifications.find((item) => item.guide_id === guide.id) ?? null,
     trekLinks: guideTrekLinks.filter((item) => item.guide_id === guide.id),
   }));
+}
+
+export function getGuidesForTrek(trekId: string): Promise<VerifiedGuide[]> {
+  return unstable_cache(
+    () => loadGuidesForTrek(trekId),
+    ["trek-guides", trekId],
+    { revalidate: 3600, tags: ["treks", `trek-id:${trekId}`] }
+  )();
 }
 

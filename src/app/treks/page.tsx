@@ -2,6 +2,8 @@ import { BadgeCheck, Mountain, ShieldAlert } from "lucide-react";
 import { getVerifiedTreks } from "@/lib/treks";
 import { TreksExplorer } from "@/components/trek/TreksExplorer";
 
+export const revalidate = 3600;
+
 export default async function TreksPage() {
   const treks = await getVerifiedTreks();
 

@@ -11,6 +11,8 @@ import { HomeHero } from "@/components/home/HomeHero";
 import { HomeStats } from "@/components/home/HomeStats";
 import { TrekCard } from "@/components/trek/TrekCard";
 
+export const revalidate = 3600;
+
 export default async function Home() {
   const allTreks = await getVerifiedTreks();
   const treks = allTreks.slice(0, 3);

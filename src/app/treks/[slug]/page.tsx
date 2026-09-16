@@ -31,6 +31,8 @@ import {
 import { getTrekRoutePoints } from "@/lib/trek-route";
 import { getTrekImageWithFallback } from "@/lib/trek-images";
 
+export const revalidate = 3600;
+
 type TrekDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
@@ -197,6 +199,7 @@ export default async function TrekDetailPage({ params }: TrekDetailPageProps) {
           <ScrollReveal delayMs={110}>
             <TrekItineraryMap
               trekName={trek.name}
+              trekSlug={trek.slug}
               itinerary={itinerary}
               region={trek.region}
               routePoints={routePoints}

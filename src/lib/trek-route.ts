@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { supabase } from "@/lib/supabase";
 import type { TrekRoutePoint } from "@/types/database";
 
@@ -5,7 +6,7 @@ import type { TrekRoutePoint } from "@/types/database";
  * Fetch all route waypoints for a trek, ordered by sequence.
  * Returns an empty array if the trek has no route points yet.
  */
-export async function getTrekRoutePoints(
+async function loadTrekRoutePoints(
   trekId: string
 ): Promise<TrekRoutePoint[]> {
   const { data, error } = await supabase
@@ -29,6 +30,14 @@ export async function getTrekRoutePoints(
   }
 
   return (data ?? []) as TrekRoutePoint[];
+}
+
+export function getTrekRoutePoints(trekId: string): Promise<TrekRoutePoint[]> {
+  return unstable_cache(
+    () => loadTrekRoutePoints(trekId),
+    ["trek-route-points", trekId],
+    { revalidate: 3600, tags: ["treks", `trek-id:${trekId}`] }
+  )();
 }
 
 /**

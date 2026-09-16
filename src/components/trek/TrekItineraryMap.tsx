@@ -11,17 +11,45 @@ import {
 } from "lucide-react";
 import type { TrekRoutePoint } from "@/types/database";
 
-const TrekMap3D = dynamic(
-  () => import("@/components/trek/TrekMap3D").then((m) => m.TrekMap3D),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-[520px] items-center justify-center rounded-2xl bg-stone-900">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-      </div>
-    ),
-  }
-);
+const EBC_FALLBACK: TrekRoutePoint[] = [
+  ["Lukla", 86.7294, 27.6868, 2860, "Starting point — Tenzing-Hillary Airport."],
+  ["Namche Bazaar", 86.7139, 27.8063, 3440, "Sherpa capital and first acclimatization stop."],
+  ["Tengboche", 86.7642, 27.8362, 3860, "Monastery with views of Ama Dablam and Everest."],
+  ["Dingboche", 86.8321, 27.894, 4410, "Second rest day before the high camps."],
+  ["Lobuche", 86.8085, 27.9503, 4940, "Last village before Gorak Shep."],
+  ["Everest Base Camp", 86.8516, 27.9997, 5364, "The foot of the Khumbu Icefall."],
+].map(([name, longitude, latitude, altitude_m, description], index) => ({
+  id: `ebc-fallback-${index + 1}`,
+  trek_id: "fallback",
+  sequence_order: index + 1,
+  day_number: index + 1,
+  name: String(name),
+  latitude: Number(latitude),
+  longitude: Number(longitude),
+  altitude_m: Number(altitude_m),
+  point_type: index === 0 ? "start" : index === 5 ? "base_camp" : "village",
+  is_overnight: index !== 5,
+  is_acclimatization_day: index === 1 || index === 3,
+  description: String(description),
+  special_notes: null,
+  stay_type: "teahouse",
+  stay_name: null,
+  stay_price_usd_min: null,
+  stay_price_usd_max: null,
+  stay_facilities: [],
+  image_url: null,
+  created_at: "",
+  updated_at: "",
+}));
+
+const TrekViewer = dynamic(() => import("@/components/trek/TrekViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[640px] items-center justify-center rounded-2xl bg-[#0b1220]">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+    </div>
+  ),
+});
 
 type ItineraryDay = {
   id: string;
@@ -34,6 +62,7 @@ type ItineraryDay = {
 
 type TrekItineraryMapProps = {
   trekName: string;
+  trekSlug?: string;
   itinerary: ItineraryDay[];
   region?: string | null;
   routePoints?: TrekRoutePoint[];
@@ -41,10 +70,19 @@ type TrekItineraryMapProps = {
 
 export function TrekItineraryMap({
   trekName,
+  trekSlug,
   itinerary,
   routePoints = [],
 }: TrekItineraryMapProps) {
-  const has3DRoute = routePoints.length > 0;
+  const viewerPoints =
+    routePoints.length > 0
+      ? routePoints
+      : trekSlug === "everest-base-camp" ||
+          trekSlug === "everest-base-camp-trek" ||
+          trekSlug === "ebc"
+        ? EBC_FALLBACK
+        : [];
+  const has3DRoute = viewerPoints.length > 0;
   const hasItinerary = itinerary.length > 0;
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [viewMode, setViewMode] = useState<"elevation" | "3d">(
@@ -144,7 +182,7 @@ export function TrekItineraryMap({
       </div>
 
       {viewMode === "3d" && has3DRoute ? (
-        <TrekMap3D trekName={trekName} points={routePoints} />
+        <TrekViewer trekName={trekName} points={viewerPoints} />
       ) : !hasItinerary ? (
         <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50/60 p-6">
           <div className="flex items-center gap-2 text-stone-500">
