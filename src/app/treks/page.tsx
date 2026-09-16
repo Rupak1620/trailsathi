@@ -26,7 +26,7 @@ export default async function TreksPage() {
             </h1>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
               Source-backed routes across the Himalaya with clear difficulty, altitude, permit
-              fees, and seasonal guidance — all linked back to evidence.
+              fees, and seasonal guidance - all linked back to evidence.
             </p>
           </div>
 
@@ -35,7 +35,7 @@ export default async function TreksPage() {
               icon={<Mountain size={20} />}
               label="Verified routes"
               value={`${treks.length}`}
-              detail="Only database-backed treks appear here."
+              detail="Look for the best route that suits your skills and experience."
             />
             <SummaryCard
               icon={<BadgeCheck size={20} />}
@@ -58,7 +58,7 @@ export default async function TreksPage() {
           <h2 className="text-2xl font-semibold text-stone-900">Verified trek collection</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
             Search and filter source-linked routes. Each card shows a real trail photo, difficulty,
-            altitude, and permit summary — open any trek for the full profile and guides.
+            altitude, and permit summary - open any trek for the full profile and guides.
           </p>
         </div>
 
