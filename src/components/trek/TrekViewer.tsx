@@ -113,6 +113,10 @@ export default function TrekViewer({ trekName, points }: Props) {
     mapRef.current = map;
     map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
 
+    const resize = () => map.resize();
+    const observer = new ResizeObserver(resize);
+    if (containerRef.current) observer.observe(containerRef.current);
+
     const reveal = () => {
       setReady(true);
       requestAnimationFrame(() => map.resize());
@@ -194,6 +198,7 @@ export default function TrekViewer({ trekName, points }: Props) {
     return () => {
       window.clearTimeout(failsafe);
       flyToken.current += 1;
+      observer.disconnect();
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
       map.remove();
@@ -204,8 +209,17 @@ export default function TrekViewer({ trekName, points }: Props) {
   const current = points[active];
 
   return (
-    <div className="relative grid h-[640px] overflow-hidden rounded-2xl border border-stone-800 bg-[#0b1220] shadow-xl md:grid-cols-[300px_1fr]">
-      <aside className="flex min-h-0 flex-col border-b border-white/10 md:border-b-0 md:border-r">
+    <div className="relative h-[560px] overflow-hidden rounded-2xl border border-stone-800 bg-[#0b1220] shadow-xl sm:h-[640px]">
+      <div className="absolute inset-0">
+        <div ref={containerRef} className="h-full w-full" />
+        {!ready ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0b1220]">
+            <div className="h-9 w-9 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+          </div>
+        ) : null}
+      </div>
+
+      <aside className="absolute bottom-3 left-3 top-3 z-10 flex w-[min(280px,calc(100%-1.5rem))] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220]/90 shadow-2xl backdrop-blur-md">
         <div className="px-4 pb-3 pt-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
             Explore the trail
@@ -272,15 +286,6 @@ export default function TrekViewer({ trekName, points }: Props) {
           </button>
         </div>
       </aside>
-
-      <div className="relative min-h-[320px]">
-        <div ref={containerRef} className="absolute inset-0" />
-        {!ready ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#0b1220]">
-            <div className="h-9 w-9 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-          </div>
-        ) : null}
-      </div>
     </div>
   );
 }

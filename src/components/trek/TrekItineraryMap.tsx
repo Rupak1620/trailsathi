@@ -45,7 +45,7 @@ const EBC_FALLBACK: TrekRoutePoint[] = [
 const TrekViewer = dynamic(() => import("@/components/trek/TrekViewer"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[640px] items-center justify-center rounded-2xl bg-[#0b1220]">
+    <div className="flex h-[560px] items-center justify-center rounded-2xl bg-[#0b1220] sm:h-[640px]">
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
     </div>
   ),
