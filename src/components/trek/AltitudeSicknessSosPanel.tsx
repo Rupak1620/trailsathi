@@ -276,7 +276,7 @@ Coordinates: [GPS Coordinates here]`;
                 <a href="tel:+97714247041" className="text-emerald-700 hover:underline font-semibold font-mono mt-0.5 block">+977-1-4247041</a>
               </div>
               <div className="bg-white p-2.5 rounded-lg border border-stone-150/65">
-                <span className="font-bold text-stone-800 block">Heli Evac Dispatch</span>
+                <span className="font-bold text-stone-800 block">Toll-Free Hotline: (24/7 emergency support)</span>
                 <a href="tel:1144" className="text-emerald-700 hover:underline font-semibold font-mono mt-0.5 block">1144 (Nepal Hotline)</a>
               </div>
             </div>

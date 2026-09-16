@@ -60,7 +60,7 @@ export type TrekWeatherResponse = {
 const OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast";
 
 // Cache responses for 30 minutes to avoid hammering the API on every page load
-export const revalidate = 1800;
+export const revalidate = 3600;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 1800 },
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=3600",
       },
     });
   } catch (err) {
